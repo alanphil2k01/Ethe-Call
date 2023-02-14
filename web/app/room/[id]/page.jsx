@@ -1,8 +1,9 @@
-import { useRouter } from 'next/router';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
-import useSocket from '../../hooks/useSocket';
-import '../index.css'
+import useSocket from '../../../hooks/useSocket';
 
 
 const ICE_SERVERS = {
@@ -13,7 +14,7 @@ const ICE_SERVERS = {
   ],
 };
 
-const Room = () => {
+export default function Room ({ params })  {
   useSocket();
   const [micActive, setMicActive] = useState(true);
   const [cameraActive, setCameraActive] = useState(true);
@@ -26,7 +27,7 @@ const Room = () => {
   const userStreamRef = useRef();
   const hostRef = useRef(false);
 
-  const { id: roomName } = router.query;
+  const { id: roomName } = params;
   useEffect(() => {
     socketRef.current = io();
     // First we join a room
@@ -76,7 +77,7 @@ const Room = () => {
       });
   };
 
-  
+
 
   const handleRoomCreated = () => {
     hostRef.current = true;
@@ -268,4 +269,3 @@ const Room = () => {
   );
 };
 
-export default Room;
