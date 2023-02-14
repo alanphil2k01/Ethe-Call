@@ -21,9 +21,9 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-       <h1>Lets join a room!</h1>
+       <h1 className='text-2xl'>Lets join a room!</h1>
        <input onChange={(e) => setRoomName(e.target.value)} value={roomName}  />
-       <button onClick={joinRoom} type="button" >Join Room</button>
+       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={joinRoom} type="button" >Join Room</button>
       </main>
     </div>
   )

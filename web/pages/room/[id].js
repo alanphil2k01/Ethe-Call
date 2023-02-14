@@ -2,6 +2,8 @@ import { useRouter } from 'next/router';
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import useSocket from '../../hooks/useSocket';
+import '../index.css'
+
 
 const ICE_SERVERS = {
   iceServers: [
@@ -256,10 +258,10 @@ const Room = () => {
       <button onClick={toggleMic} type="button">
         {micActive ? 'Mute Mic' : 'UnMute Mic'}
       </button>
-      <button onClick={leaveRoom} type="button">
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={leaveRoom} type="button">
         Leave
       </button>
-      <button onClick={toggleCamera} type="button">
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={toggleCamera} type="button">
         {cameraActive ? 'Stop Camera' : 'Start Camera'}
       </button>
     </div>
