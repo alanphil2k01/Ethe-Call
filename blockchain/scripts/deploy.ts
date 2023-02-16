@@ -1,18 +1,23 @@
 import { ethers } from "hardhat";
+import fs from 'fs';
+import path from 'path';
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
+  const EtheCall = await ethers.getContractFactory("EtheCall");
+  const etheCall = await EtheCall.deploy();
 
-  const lockedAmount = ethers.utils.parseEther("1");
+  await etheCall.deployed();
 
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
+  console.log(`EtheCall was deployed to ${etheCall.address}`);
+  fs.createReadStream(path.join(__dirname, '../artifacts/contracts/Ethe-Call.sol/EtheCall.json'))
+    .pipe(fs.createWriteStream(path.join(__dirname, '../../common/EtheCall.json')));
 
-  await lock.deployed();
+  fs.writeFile(path.join(__dirname, "../../common/contract_addr.js"), `export default '${etheCall.address}'`, function(err) {
+    if(err) {
+        return console.log(err);
+    }
+});
 
-  console.log(`Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

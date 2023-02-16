@@ -3,16 +3,22 @@
 import Head from 'next/head'
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './page.module.css';
+import { useWalletDetails } from '../hooks/blockchain';
 
 export default function Home() {
   const router = useRouter()
   const [roomName, setRoomName] = useState('')
+  const { acc, Ethe_Call, loading } = useWalletDetails();
 
   const joinRoom = () => {
     router.push(`/room/${roomName || Math.random().toString(36).slice(2)}`)
   }
+
+  useEffect(() => {
+      console.log(acc);
+  });
 
   return (
     <div >
