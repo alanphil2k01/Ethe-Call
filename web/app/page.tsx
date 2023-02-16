@@ -1,5 +1,7 @@
 'use client';
+
 import Head from 'next/head'
+import Link from 'next/link';
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import styles from './page.module.css';
@@ -24,6 +26,7 @@ export default function Home() {
        <h1 className='text-2xl'>Lets join a room!</h1>
        <input onChange={(e) => setRoomName(e.target.value)} value={roomName}  />
        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={joinRoom} type="button" >Join Room</button>
+       <Link href="" />
       </main>
     </div>
   )
