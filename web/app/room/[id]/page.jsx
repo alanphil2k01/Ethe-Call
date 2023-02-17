@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import useSocket from '../../../hooks/useSocket';
+import { FaMicrophone, FaMicrophoneSlash, FaVideo, FaVideoSlash, FaPhone } from 'react-icons/fa';
 
 
 const ICE_SERVERS = {
@@ -253,18 +254,33 @@ export default function Room ({ params })  {
   };
 
   return (
-    <div>
-      <video autoPlay ref={userVideoRef} />
-      <video autoPlay ref={peerVideoRef} />
-      <button onClick={toggleMic} type="button">
-        {micActive ? 'Mute Mic' : 'UnMute Mic'}
-      </button>
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={leaveRoom} type="button">
-        Leave
-      </button>
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={toggleCamera} type="button">
-        {cameraActive ? 'Stop Camera' : 'Start Camera'}
-      </button>
+    
+<div className="flex flex-col items-center">
+  <div className="flex flex-row justify-center w-full mb-8">
+    <div className="relative">
+      <video className="w-full h-full object-cover border rounded-lg shadow-md" autoPlay ref={userVideoRef} />
+      
     </div>
+    <div className="relative">
+      <video className="w-full h-full object-cover border rounded-lg shadow-md" autoPlay ref={peerVideoRef} />
+      
+    </div>
+  </div>
+  <div className="flex flex-row justify-center">
+    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-l-lg mx-2" onClick={toggleMic} type="button">
+      {micActive ? <FaMicrophoneSlash /> : <FaMicrophone />}
+    </button>
+    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-2" onClick={toggleCamera} type="button">
+      {cameraActive ? <FaVideoSlash /> : <FaVideo />}
+    </button>
+    <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-r-lg mx-2" onClick={leaveRoom} type="button">
+      <FaPhone />
+    </button>
+  </div>
+</div>
+
+  
+
+
   );
 };
