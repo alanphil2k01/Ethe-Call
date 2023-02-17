@@ -48,7 +48,7 @@ const SocketHandler = (req, res) => {
     // Triggered when server gets an offer from a peer in the room.
     socket.on("offer", (offer, roomName) => {
       console.log("-----------------OFFER-------------------");
-      console.log(offer);
+      console.log(offer.sdp.match(/a=fingerprint:sha-256\s(.+)/)[1]);
       console.log("-----------------------------------------");
       socket.broadcast.to(roomName).emit("offer", offer); // Sends Offer to the other peer in the room.
     });
@@ -56,7 +56,7 @@ const SocketHandler = (req, res) => {
     // Triggered when server gets an answer from a peer in the room.
     socket.on("answer", (answer, roomName) => {
       console.log("-----------------ANSWER-------------------");
-      console.log(answer);
+      console.log(answer.sdp.match(/a=fingerprint:sha-256\s(.+)/)[1]);
       console.log("-----------------------------------------");
       socket.broadcast.to(roomName).emit("answer", answer); // Sends Answer to the other peer in the room.
     });

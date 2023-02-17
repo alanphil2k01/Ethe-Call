@@ -115,7 +115,10 @@ export default function Room ({ params })  {
       rtcConnectionRef.current
         .createOffer()
         .then((offer) => {
-          rtcConnectionRef.current.setLocalDescription(offer);
+          rtcConnectionRef.current.setLocalDescription(offer).then(() => {
+              console.log(rtcConnectionRef.current);
+              console.log("OFFER = " + rtcConnectionRef.current.localDescription.sdp.match(/a=fingerprint:sha-256\s(.+)/)[1]);
+          });
           socketRef.current.emit('offer', offer, roomName);
         })
         .catch((error) => {
@@ -163,6 +166,7 @@ export default function Room ({ params })  {
   };
 
   const handleReceivedOffer = (offer) => {
+      console.log("OFFER = " + offer.sdp.match(/a=fingerprint:sha-256\s(.+)/)[1]);
     if (!hostRef.current) {
       rtcConnectionRef.current = createPeerConnection();
       rtcConnectionRef.current.addTrack(
@@ -179,6 +183,7 @@ export default function Room ({ params })  {
         .createAnswer()
         .then((answer) => {
           rtcConnectionRef.current.setLocalDescription(answer);
+      console.log("ANSER = " + answer.sdp.match(/a=fingerprint:sha-256\s(.+)/)[1]);
           socketRef.current.emit('answer', answer, roomName);
         })
         .catch((error) => {
@@ -188,6 +193,7 @@ export default function Room ({ params })  {
   };
 
   const handleAnswer = (answer) => {
+      console.log("ANSER = " + answer.sdp.match(/a=fingerprint:sha-256\s(.+)/)[1]);
     rtcConnectionRef.current
       .setRemoteDescription(answer)
       .catch((err) => console.log(err));
@@ -254,16 +260,16 @@ export default function Room ({ params })  {
   };
 
   return (
-    
+
 <div className="flex flex-col items-center">
   <div className="flex flex-row justify-center w-full mb-8">
     <div className="relative">
       <video className="w-full h-full object-cover border rounded-lg shadow-md" autoPlay ref={userVideoRef} />
-      
+
     </div>
     <div className="relative">
       <video className="w-full h-full object-cover border rounded-lg shadow-md" autoPlay ref={peerVideoRef} />
-      
+
     </div>
   </div>
   <div className="flex flex-row justify-center">
@@ -279,7 +285,7 @@ export default function Room ({ params })  {
   </div>
 </div>
 
-  
+
 
 
   );
