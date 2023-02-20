@@ -259,31 +259,63 @@ export default function Room ({ params })  {
     router.push('/')
   };
 
+ 
+
+async function captureScreen() {
+  let mediaStream = null;
+  try {
+      mediaStream = await navigator.mediaDevices.getDisplayMedia({
+          video: {
+              cursor: "always"
+          },
+          audio: true
+      });
+
+      document.getElementById("screen-share").srcObject = mediaStream;
+      document.getElementById("screen-share").onloadedmetadata = () => {
+      document.getElementById("screen-share").play();
+     
+      };
+  } catch (ex) {
+      console.log("Error occurred", ex);
+  }
+}
+
   return (
 
 <div className="flex flex-col items-center">
   <div className="flex flex-row justify-center w-full mb-8">
     <div className="relative">
-      <video className="w-full h-full object-cover border rounded-lg shadow-md" autoPlay ref={userVideoRef} />
-
+      <video  className="w-full h-full object-cover border rounded-lg shadow-md" autoPlay ref={userVideoRef} />
+       <div className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center">
+        {cameraActive ? null: <FaVideoSlash className="text-white text-2xl" />}
+      </div>
     </div>
     <div className="relative">
       <video className="w-full h-full object-cover border rounded-lg shadow-md" autoPlay ref={peerVideoRef} />
-
+      <div className="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center">
+        {cameraActive ? null: <FaVideoSlash className="text-white text-2xl" />}
+      </div>
     </div>
   </div>
+  <video id="screen-share" muted autoplay></video>
   <div className="flex flex-row justify-center">
     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-l-lg mx-2" onClick={toggleMic} type="button">
-      {micActive ? <FaMicrophoneSlash /> : <FaMicrophone />}
+      {micActive ? <FaMicrophone /> : <FaMicrophoneSlash />}
     </button>
     <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-2" onClick={toggleCamera} type="button">
-      {cameraActive ? <FaVideoSlash /> : <FaVideo />}
+      {cameraActive ? <FaVideo /> : <FaVideoSlash />}
     </button>
     <button className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-r-lg mx-2" onClick={leaveRoom} type="button">
       <FaPhone />
     </button>
+   
+    <button onClick={captureScreen} >Capture</button>
+    
   </div>
+
 </div>
+
 
 
 
