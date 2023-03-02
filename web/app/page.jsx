@@ -15,6 +15,12 @@ export default function Home() {
   const joinRoom = () => {
     router.push(`/room/${roomName || Math.random().toString(36).slice(2)}`)
   }
+  
+  const createRoom = () => {
+    router.push(`/createRoom/`)
+  }
+
+
 
   useEffect(() => {
       console.log(acc);
@@ -32,6 +38,7 @@ export default function Home() {
        <h1 className='text-2xl'>Lets join a room!</h1>
        <input onChange={(e) => setRoomName(e.target.value)} value={roomName}  />
        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={joinRoom} type="button" >Join Room</button>
+       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={createRoom} type="button" >Create Room</button>
        <Link href="" />
       </main>
     </div>
