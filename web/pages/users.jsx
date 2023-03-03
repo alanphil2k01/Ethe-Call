@@ -1,4 +1,3 @@
-'use client';
 import React, { useState } from 'react';
 
 export default function users() {
@@ -13,7 +12,7 @@ export default function users() {
     for (let i = 1; i <= selectedNumber; i++) {
       textFields.push(
         <div key={i}>
-          <label htmlFor={`text-${i}`}>User nickname {i}:</label>
+          <label htmlFor={`text-${i}`}>Text field {i}:</label>
           <input id={`text-${i}`} type="text" />
         </div>
       );
@@ -32,7 +31,7 @@ export default function users() {
 
   return (
     <div>
-      <label htmlFor="number">Select number of users in the call :</label>
+      <label htmlFor="number">Select a number:</label>
       <select id="number" value={selectedNumber} onChange={handleChange}>
         {options}
       </select>
@@ -40,3 +39,4 @@ export default function users() {
     </div>
   );
 }
+
