@@ -35,10 +35,10 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-       <h1 className='text-2xl'>Lets join a room!</h1>
+       <h1 className='text-white text-2xl'>Lets join a room!</h1>
        <input onChange={(e) => setRoomName(e.target.value)} value={roomName}  />
-       <button className="bg-sky-200 hover:bg-blue-700 transition ease-in-out delay-150 -translate-y-1 hover:scale-110 text-white font-bold py-2 px-4 rounded" onClick={joinRoom} type="button" >Join Room</button>
-       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={createRoom} type="button" >Create Room</button>
+       <button className="w-40 bg-white hover:bg-black hover:text-white transition ease-in-out delay-150 -translate-y-1 hover:scale-110 text-black font-bold py-2 px-4 rounded" onClick={joinRoom} type="button" >Join Room</button>
+       <button className="w-40 bg-white hover:bg-black hover:text-white transition ease-in-out delay-150 -translate-y-1 hover:scale-110 text-black font-bold py-2 px-4 rounded" onClick={createRoom} type="button" >Create Room</button>
        <Link href="" />
       </main>
     </div>
