@@ -2,28 +2,29 @@
 import { useEffect, useRef } from "react";
 import io, { Socket } from "socket.io-client";
 import { ClientToServerEvents, ServerToClientEvents } from '@/types/socket';
-import { MutableRefObject } from "react";
 
-const useSocket = (): MutableRefObject<Socket<ServerToClientEvents, ClientToServerEvents> >=> {
+const useSocket = () => {
   const socketCreated = useRef(false)
     const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents>>();
 
   useEffect(() =>{
     if (!socketCreated.current) {
+      const socketInitializer = async () => {
+        await fetch ('/api/socket2')
+        socketRef.current = io();
+      }
       try {
-        fetch("/api/socket2")
-        .then(() => {
-            socketRef.current = io()
-            socketCreated.current = true
-            console.log("Inside " + socketRef.current);
-        });
+        socketInitializer()
+            .then(() => {
+                socketCreated.current = true
+            });
       } catch (error) {
         console.log(error)
       }
     }
   }, []);
 
-  return socketRef;
+  return { socketRef };
 };
 
 export default useSocket

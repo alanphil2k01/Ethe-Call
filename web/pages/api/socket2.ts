@@ -18,12 +18,6 @@ interface NextApiResponseWithSocket extends NextApiResponse {
 
 const users: { [key: string]: { socketID: string, addr: string }[] }= {};
 
-function printUSERS() {
-    console.log("----------------------------------");
-    console.log(users);
-    console.log("----------------------------------");
-}
-
 const socketToRoom: { [key: string]: string } = {};
 
 const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
@@ -36,10 +30,6 @@ const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
     res.socket.server.io = io;
 
     io.on('connection', (socket) => {
-        printUSERS();
-
-        socket.on("ping", () => { socket.emit("pong"); })
-
         socket.on("join room", ({ roomID, addr }) => {
             socket.data.addr = addr;
 
@@ -82,7 +72,6 @@ const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
         });
 
         socket.on('disconnect', () => {
-            printUSERS();
             const roomID = socketToRoom[socket.id];
             let room = users[roomID];
             if (room) {
@@ -93,7 +82,9 @@ const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
 
         socket.on("ice candidate", ({ candidate, roomID, fromID }) => {
             users[roomID].forEach(user => {
-                socket.to(user.socketID).emit("ice candidate", { candidate, fromID });
+                if (fromID !== user.socketID) {
+                    socket.to(user.socketID).emit("ice candidate", { candidate, fromID });
+                }
             });
         });
 

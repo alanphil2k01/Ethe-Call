@@ -4,7 +4,6 @@ export interface ServerToClientEvents {
     "user joined": (joinedPayload: {offer: RTCSessionDescription, fromUserID: string}) => void;
     "receiving returned answer": (answerReturnPayload: { returnID: string, answer: RTCSessionDescription }) => void;
     "ice candidate": (candidatePayload: { candidate: RTCIceCandidate, fromID: string }) => void;
-    "pong": () => void;
 }
 
 export interface ClientToServerEvents {
@@ -12,7 +11,6 @@ export interface ClientToServerEvents {
     "send offer": (offerPayload: { toUserID: string, offer: RTCSessionDescription, fromUserID: string }) => void;
     "return answer": (answerPayload: { callerID: string, answer: RTCSessionDescription }) => void;
     "ice candidate": (candidatePayload: { candidate: RTCIceCandidate, roomID: string, fromID: string }) => void;
-    "ping": () => void;
 }
 
 export interface InterServerEvents {
