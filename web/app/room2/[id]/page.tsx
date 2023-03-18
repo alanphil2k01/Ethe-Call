@@ -325,9 +325,9 @@ const Room = ({ params }) => {
 
     const { certificates } = useRTCCertificate();
 
-    function getSocket() {
-        console.log("connecting to ", process.env.WEBSOCKET_URL || 'api/sockt');
-        socketRef.current = io(process.env.WEBSOCKET_URL || '/api/socket')
+    function getSocket(url: string) {
+        console.log("connecting to ", url);
+        socketRef.current = io(url)
         socketCreated.current = true
         console.log("Joining Room");
         socketRef.current.emit("join room", { roomID, addr: addr.current });
@@ -378,11 +378,11 @@ const Room = ({ params }) => {
         if (!userStreamRef.current || socketCreated.current) {
             return;
         }
-        // fetch("http://34.123.244.52/api/socket2")
-        // .then(() => {
-        // }).then(() => {
-        // });
-        getSocket();
+        fetch("/api/socket2")
+        .then(() => {
+                // getSocket(process.env.WEBSOCKET_URL || '/api/socket');
+                getSocket("");
+        });
 
     }, [isLoadingStream]);
 
