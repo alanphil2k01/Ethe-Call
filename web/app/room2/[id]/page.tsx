@@ -14,6 +14,7 @@ type Options = {
     stream?: MediaStream;
     initiator?: boolean;
     addr: string,
+    dcMessageHandler: (event: MessageEvent) => void;
 }
 
 const ICE_SERVERS = [
@@ -57,7 +58,7 @@ class Peer {
 
         if (this.initiator) {
             this.dc = this.pc.createDataChannel(`chat ${this.addr}`);
-            this.dc.onmessage = this.dcMessageHandler;
+            this.dc.onmessage = opts.dcMessageHandler;
             this.dc.onopen = () => {
                 if (this.dc.readyState === "open") {
                     this.dcReady = true;
@@ -66,7 +67,7 @@ class Peer {
         } else {
             this.pc.ondatachannel = (event) => {
                 this.dc = event.channel;
-                this.dc.onmessage = this.dcMessageHandler;
+                this.dc.onmessage = opts.dcMessageHandler;
                 this.dc.onopen = () => {
                     if (this.dc.readyState === "open") {
                         this.dcReady = true;
@@ -74,7 +75,6 @@ class Peer {
                 }
             }
         }
-
     }
 
     addTracks() {
@@ -83,10 +83,6 @@ class Peer {
                     this.pc.addTrack(track, this.userStream);
                     });
         }
-    }
-
-    dcMessageHandler(event: MessageEvent) {
-        console.log(event.data);
     }
 
     async createSDP(): Promise<RTCSessionDescription> {
@@ -291,7 +287,7 @@ function Video ({ stream }: { stream: MediaStream }) {
 
     return (
         <div>
-            <video autoPlay controls className="bg-black h-80 w-80" ref={peerVidRef} />
+            <video autoPlay className="bg-black h-80 w-80" ref={peerVidRef} />
         </div>
     );
 }
@@ -304,6 +300,16 @@ function DeviceList({ deviceList, onChange}: { deviceList: DeviceInfo[], onChang
     )
 }
 
+function Chat({ msgs }: { msgs: string[] }) {
+    return (
+        <div>
+            <ul>
+                { msgs.map(msg => <li>{msg}</li>)}
+            </ul>
+        </div>
+    )
+}
+
 const Room = ({ params }) => {
     const [peers, setPeers] = useState<Peer[]>([]);
     const userVideoRef = useRef<HTMLVideoElement>();
@@ -312,6 +318,8 @@ const Room = ({ params }) => {
     const socketCreated = useRef(false)
     const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents>>();
     const addr = useRef<string>((Math.random() + 1).toString(36).substring(5));
+    const [chatMsgs, setChatMsgs] = useState<string[]>([]);
+    const chatInputRef = useRef<HTMLInputElement>()
 
     const {
         isLoadingStream,
@@ -386,6 +394,10 @@ const Room = ({ params }) => {
 
     }, [isLoadingStream]);
 
+    function dcMessageHandler(event: MessageEvent) {
+        const msg = event.data;
+        setChatMsgs(prevChats => [...prevChats, msg]);
+    }
 
     function createPeer(toUserID: string, fromUserID: string) {
         const peer = new Peer({
@@ -393,6 +405,7 @@ const Room = ({ params }) => {
             stream: userStreamRef.current,
             initiator: true,
             certificates: certificates.current,
+            dcMessageHandler: dcMessageHandler
         });
         peer.pc.onicecandidate = (event) => {
             if (event.candidate) {
@@ -422,6 +435,7 @@ const Room = ({ params }) => {
             addr: callerID,
             stream,
             certificates: certificates.current,
+            dcMessageHandler: dcMessageHandler
         })
         peer.pc.onicecandidate = (event) => {
             if (event.candidate) {
@@ -446,19 +460,24 @@ const Room = ({ params }) => {
         return peer;
     }
 
+    function sendChatMsg() {
+        const val = chatInputRef.current.value;
+        peers.forEach(peer => {
+            if (peer.dcReady) {
+                peer.dc.send(`${val} from ${socketRef.current.id}`);
+            } else {
+                console.log("Peer dc is not ready");
+            }
+        })
+        chatInputRef.current.value = "";
+        setChatMsgs(prevChats => [...prevChats, `you sent ${val}`]);
+}
+
     return (
         <div>
             <div className="h-5 bg-white"></div>
-            <button onClick={() => {
-            peers.forEach(peer => {
-                    if (peer.dcReady) {
-                    peer.dc.send(`hello from ${socketRef.current.id}`);
-                    } else {
-                    console.log("Peer dc is not ready");
-                    }
-                    })
-            }}>Send Message</button>
 
+            {/*
             <button onClick={() => {
                 peersRef.current.forEach(peer => {
                     console.log("Connecttion State: ", peer.peer.pc.connectionState);
@@ -467,6 +486,7 @@ const Room = ({ params }) => {
                     console.log("Can Trickle: ", peer.peer.pc.canTrickleIceCandidates);
                 })
             }} >Check Status</button>
+            */}
 
             <video autoPlay muted className="h-80 w-80 bg-black" ref={userVideoRef} />
 
@@ -481,6 +501,13 @@ const Room = ({ params }) => {
             <DeviceList deviceList={audioInList.current} onChange={(e) => {setAudioIn(e.target.value)}} />
             <DeviceList deviceList={audioOutList.current} />
             <DeviceList deviceList={cameraList.current} onChange={(e) => {setCamera(e.target.value)}} />
+            <Chat msgs={chatMsgs} />
+            <input type="text" ref={chatInputRef} onKeyDown={(event) => {
+                if (event.key == "Enter") {
+                    sendChatMsg();
+                }
+            }}/>
+            <button onClick={sendChatMsg}>Send</button>
         </div>
     );
 };
