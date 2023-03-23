@@ -7,7 +7,7 @@
     "turbo": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "start-secure": "next build && next start",
+    "start-secure": "next build && node server.js",
     "lint": "next lint"
   },
   "dependencies": {
