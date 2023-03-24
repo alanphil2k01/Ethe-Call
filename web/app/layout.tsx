@@ -1,7 +1,9 @@
+'use client';
+
 import './globals.css'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/css/bootstrap.css';
-
+import BlockchainProvider from "./blockchain";
 
 export default function RootLayout({
   children,
@@ -51,9 +53,9 @@ export default function RootLayout({
     </form>
   </div>
 </nav>
-      {
-        children
-      }
+        <BlockchainProvider>
+            { children }
+        </BlockchainProvider>
     </body>
   </html>
   )
