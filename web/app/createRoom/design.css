@@ -1,14 +1,18 @@
 .main {
-    background: #adefdf;
-    height: 600px;
-    
+    background-color: #1d2b3a;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    gap: 50px;
   }
 .div1{
-background-color: #e7f8fb;
-border-radius: 100px;
+background-color:#1d2b3a;
 width: 350px;
-height: 45px;
-margin-top: 40px;
+height: 30px;
+margin-top: 30px;
 margin-left: 60px;
 box-shadow:3px 3px 5px #06c4b8;
 }
@@ -21,15 +25,17 @@ box-shadow:3px 3px 5px #06c4b8;
 .input1{
     border-radius: 10px;
     color: #06c4b8;
-    border-color: red;
+    background-color: #1d2b3a;
+    box-shadow:3px 3px 5px #06c4b8;
 }
 .div2{
 box-shadow:3px 3px 5px #06c4b8;
-background-color: #e7f8fb;
-border-radius: 100px;
+background-color: #1d2b3a;
 width: 350px;
-height: 45px;
-margin-top: 1%;
+height: 30px;
+margin-top: 100px;
+margin-bottom: auto;
+margin-right: auto;
 margin-left: 10px;
 }
 .label2{
@@ -37,8 +43,12 @@ margin-left: 10px;
     padding-top: 13px;
     padding-left: 20px;
     justify-content: center;
-    color: #06c4b8;
+    color: #06c6b9;
 }
 .select{
-    color: #06c4b8;
+    margin-top: 2px;
+    height: 25px;
+    border-radius: 100px;
+    background-color: #06c6b9;
+    color: #044743;
 }
