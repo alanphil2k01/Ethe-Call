@@ -32,7 +32,7 @@ export default function Home() {
   }, [loadedWeb3]);
 
   return (
-    <div >
+    <div>
       <Head>
         <title>Native WebRTC API with NextJS</title>
         <meta className={styles.description} content="Use Native WebRTC API for video conferencing" />
@@ -40,11 +40,18 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-       <h1 className='text-white text-2xl'>Lets join a room!</h1>
-       <input onChange={(e) => setRoomName(e.target.value)} value={roomName}  />
-       <button className="w-40 bg-white hover:bg-black hover:text-white transition ease-in-out delay-150 -translate-y-1 hover:scale-110 text-black font-bold py-2 px-4 rounded" onClick={joinRoom} type="button" >Join Room</button>
-       <button className="w-40 bg-white hover:bg-black hover:text-white transition ease-in-out delay-150 -translate-y-1 hover:scale-110 text-black font-bold py-2 px-4 rounded" onClick={createRoom} type="button" >Create Room</button>
-       <Link href="" />
+        <div className={`${styles.heading}`}>
+          Start your video call
+        </div>
+        <div className={`${styles.inputBox}`}>
+          <input onChange={(e) => setRoomName(e.target.value)} value={roomName} required="required"/>
+          <span>Room ID</span>
+        </div>
+        <div className={`${styles.container}`}>
+          <button onClick={joinRoom} className={`${styles.btn2}`}>Join Room</button>
+          <button onClick={createRoom} className={`${styles.btn2}`}>Create Room</button>
+        </div>
+        <Link href="" />
       </main>
     </div>
   )
