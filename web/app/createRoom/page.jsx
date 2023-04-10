@@ -31,7 +31,7 @@ export default function users() {
   }
 
   return (
-    <main className="main">
+    <body className="main">
     <div className="div2">
       <label className="label2" htmlFor="number">Select number of users in the call :</label>
       <select className="select" id="number" value={selectedNumber} onChange={handleChange}>
@@ -39,7 +39,7 @@ export default function users() {
       </select>
       {createTextFields()}
     </div>
-    </main>
+    </body>
   );
 
 }
