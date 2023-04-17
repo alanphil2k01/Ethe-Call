@@ -3,28 +3,28 @@
 import Head from 'next/head'
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import styles from './page.module.css';
-import { useWalletDetails } from '../hooks/blockchain';
+import { Blockchain } from './blockchain';
 
 export default function Home() {
   const router = useRouter()
   const [roomName, setRoomName] = useState('')
-  const { acc, Ethe_Call, loading } = useWalletDetails();
+  const { signer, loadedWeb3, loading } = useContext(Blockchain);
 
   const joinRoom = () => {
     router.push(`/room/${roomName || Math.random().toString(36).slice(2)}`)
   }
-  
+
   const createRoom = () => {
     router.push(`/createRoom/`)
   }
 
-
-
   useEffect(() => {
-      console.log(acc);
-  });
+      if (loadedWeb3) {
+          signer?.getAddress().then(addr => console.log(addr));
+      }
+  }, [loadedWeb3]);
 
   return (
     <div>
@@ -39,7 +39,7 @@ export default function Home() {
           Start your video call
         </div>
         <div className={`${styles.inputBox}`}>
-          <input onChange={(e) => setRoomName(e.target.value)} value={roomName} required="required"/>
+          <input onChange={(e) => setRoomName(e.target.value)} value={roomName} required />
           <span>Room ID</span>
         </div>
         <div className={`${styles.container}`}>
