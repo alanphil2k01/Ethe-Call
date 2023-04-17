@@ -1,7 +1,7 @@
 'use client';
-
 import './globals.css'
 import  BlockchainProvider from "./blockchain";
+import WalletButton from '@/components/WalletButton';
 
 
 export default function RootLayout({
@@ -18,6 +18,9 @@ export default function RootLayout({
       <head />
       <body>
         <BlockchainProvider>
+            <nav>
+              <WalletButton/>          
+            </nav>
             { children }
         </BlockchainProvider>
     </body>

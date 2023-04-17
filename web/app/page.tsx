@@ -4,13 +4,13 @@ import Head from 'next/head'
 import Link from 'next/link';
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useContext } from 'react'
-import styles from './page.module.css';
 import { Blockchain } from './blockchain';
+import styles from './page.module.css';
 
 export default function Home() {
   const router = useRouter()
   const [roomName, setRoomName] = useState('')
-  const { signer, loadedWeb3, loading } = useContext(Blockchain);
+  const { signer, loadedWeb3, loading, connectMetaMask } = useContext(Blockchain);
 
   const joinRoom = () => {
     router.push(`/room/${roomName || Math.random().toString(36).slice(2)}`)

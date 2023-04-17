@@ -17,6 +17,7 @@ type BlockchainVals = {
     provider: BrowserProvider;
     loading: boolean;
     loadedWeb3: boolean;
+    connectMetaMask: ()=>void;
 }
 
 export const Blockchain = createContext<BlockchainVals>(null);
@@ -37,7 +38,7 @@ export default function BlockchainProvider({ children }: { children: ReactNode }
         setContract(contract);
     }
 
-    useEffect(() => {
+    function connectMetaMask() {
         isLoading(true);
         if (window.ethereum == null) {
         } else {
@@ -45,7 +46,7 @@ export default function BlockchainProvider({ children }: { children: ReactNode }
             .then(() => setLoadedWeb3(true));
         }
         isLoading(false);
-    }, []);
+    }
 
     return (
         <Blockchain.Provider value={{
@@ -55,6 +56,7 @@ export default function BlockchainProvider({ children }: { children: ReactNode }
             contract: contract,
             loading: loading,
             loadedWeb3: loadedWeb3,
+            connectMetaMask: connectMetaMask,
         }}>
             {children}
         </Blockchain.Provider>
