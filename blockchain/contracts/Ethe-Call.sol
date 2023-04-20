@@ -7,13 +7,24 @@ error NOT_A_HOST();
 
 contract EtheCall {
 
+    struct UserInCall {
+        address addr;
+        bool admin;
+    }
+
     struct Call {
         address Host;
-        address[] Admitted;
-        address[] Admins;
+        UserInCall[] Users;
+    }
+
+    struct UserData {
+        string nickname;
+        string fingerprint;
     }
 
     mapping (string => Call) calls;
+    mapping (address => UserData) Users;
+    mapping (string => address) NicknamesToUser;
 
     modifier onlyHost(string memory _id) {
         if (msg.sender != calls[_id].Host) {
@@ -22,26 +33,60 @@ contract EtheCall {
         _;
     }
 
-    function newCall(string memory _id) public {
-        Call memory _call;
-        _call.Host = msg.sender;
-        // _call.Admins.push(msg.sender);
-        calls[_id] = _call;
+    function setNickname(string memory nickname) public {
+        require(NicknamesToUser[nickname] != address(0), "Nickname already in use");
+        NicknamesToUser[nickname] = msg.sender;
+        Users[msg.sender].nickname = nickname;
     }
 
-    function isAdmitted(string memory _id, address user) public view returns (bool) {
-        for (uint i = 0; i < calls[_id].Admitted.length; i++) {
-            if (user == calls[_id].Admitted[i]) {
+    function setFingerprint(string memory fingerprint) public {
+        Users[msg.sender].fingerprint = fingerprint;
+    }
+
+    function newCall(string memory call_id) public {
+        require(calls[call_id].Host == address(0), "Call ID already used");
+        Call memory _call;
+        _call.Host = msg.sender;
+        calls[call_id] = _call;
+    }
+
+    function isAdmitted(string memory call_id, address user) public view returns (bool) {
+        for (uint i = 0; i < calls[call_id].Users.length; i++) {
+            if (user == calls[call_id].Users[i].addr) {
                 return true;
             }
         }
         return false;
     }
 
-    function admitUser(string memory _id, address _new_callee) public onlyHost(_id) {
-        if (!isAdmitted(_id, _new_callee)) {
-            return;
+    function admitUser(string memory call_id, address new_callee) public onlyHost(call_id) {
+        require(isAdmitted(call_id, new_callee), "User already admitted");
+        UserInCall memory user;
+        user.addr = new_callee;
+        user.admin = false;
+        calls[call_id].Users.push(user);
+    }
+
+    function isAdmin(string memory call_id, address user) public view returns (bool) {
+        for (uint i = 0; i < calls[call_id].Users.length; i++) {
+            if (user == calls[call_id].Users[i].addr && calls[call_id].Users[i].admin) {
+                return true;
+            }
         }
-        calls[_id].Admitted.push(_new_callee);
+        return false;
+    }
+
+    function addAdmin(string memory call_id, address user) public onlyHost(call_id) {
+        for (uint i = 0; i < calls[call_id].Users.length; i++) {
+            if (user == calls[call_id].Users[i].addr) {
+                calls[call_id].Users[i].admin = true;
+                return;
+            }
+        }
+        calls[call_id].Users.push(UserInCall(user, true));
+    }
+
+    function changeHost(string memory call_id, address new_host) public onlyHost(call_id) {
+        calls[call_id].Host = new_host;
     }
 }
