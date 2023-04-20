@@ -14,7 +14,7 @@ contract EtheCall {
 
     struct Call {
         address Host;
-        UserInCall[] Users;
+        uint32 UserCount;
     }
 
     struct UserData {
@@ -23,6 +23,7 @@ contract EtheCall {
     }
 
     mapping (string => Call) calls;
+    mapping(string => UserInCall[]) InCallUsers;
     mapping (address => UserData) Users;
     mapping (string => address) NicknamesToUser;
 
@@ -51,8 +52,8 @@ contract EtheCall {
     }
 
     function isAdmitted(string memory call_id, address user) public view returns (bool) {
-        for (uint i = 0; i < calls[call_id].Users.length; i++) {
-            if (user == calls[call_id].Users[i].addr) {
+        for (uint i = 0; i < InCallUsers[call_id].length; i++) {
+            if (user == InCallUsers[call_id][i].addr) {
                 return true;
             }
         }
@@ -64,12 +65,12 @@ contract EtheCall {
         UserInCall memory user;
         user.addr = new_callee;
         user.admin = false;
-        calls[call_id].Users.push(user);
+        InCallUsers[call_id].push(user);
     }
 
     function isAdmin(string memory call_id, address user) public view returns (bool) {
-        for (uint i = 0; i < calls[call_id].Users.length; i++) {
-            if (user == calls[call_id].Users[i].addr && calls[call_id].Users[i].admin) {
+        for (uint i = 0; i < InCallUsers[call_id].length; i++) {
+            if (user == InCallUsers[call_id][i].addr && InCallUsers[call_id][i].admin) {
                 return true;
             }
         }
@@ -77,13 +78,17 @@ contract EtheCall {
     }
 
     function addAdmin(string memory call_id, address user) public onlyHost(call_id) {
-        for (uint i = 0; i < calls[call_id].Users.length; i++) {
-            if (user == calls[call_id].Users[i].addr) {
-                calls[call_id].Users[i].admin = true;
+        for (uint i = 0; i < InCallUsers[call_id].length; i++) {
+            if (user == InCallUsers[call_id][i].addr) {
+                InCallUsers[call_id][i].admin = true;
                 return;
             }
         }
-        calls[call_id].Users.push(UserInCall(user, true));
+
+        UserInCall memory new_admin;
+        new_admin.addr = user;
+        new_admin.admin = true;
+        InCallUsers[call_id].push(new_admin);
     }
 
     function changeHost(string memory call_id, address new_host) public onlyHost(call_id) {

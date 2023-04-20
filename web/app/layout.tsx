@@ -18,7 +18,7 @@ export default function RootLayout({
       <head />
       <body>
         <BlockchainProvider>
-            <Navbar>         
+            <Navbar>
             </Navbar>
             { children }
         </BlockchainProvider>

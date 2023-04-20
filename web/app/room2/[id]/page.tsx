@@ -5,6 +5,7 @@ import io, { Socket } from "socket.io-client";
 import { ClientToServerEvents, ServerToClientEvents } from '@/types/socket';
 import MyVideoComponent from "@/components/MyVideoComponent";
 import ChatComponent from "@/components/ChatComponent";
+
 type DeviceInfo = {
     id: string,
     label: string
@@ -263,12 +264,14 @@ function useMediaDevices() {
 
 function useRTCCertificate() {
     const certificates = useRef<RTCCertificate[]>([])
+
     const config = {
         name: "RSASSA-PKCS1-v1_5",
         modulusLength: 2048,
         publicExponent: new Uint8Array([1, 0, 1]),
         hash: "SHA-256",
     };
+
     useEffect(() => {
         RTCPeerConnection.generateCertificate(config)
             .then((cert) => {

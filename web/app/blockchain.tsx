@@ -1,7 +1,7 @@
 import contractABI from "@common/EtheCall.json";
 import contract_addr from "@common/contract_addr";
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
-import { ReactNode, createContext, useEffect, useState } from "react";
+import { ReactNode, createContext, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 
 declare global {
@@ -18,6 +18,7 @@ type BlockchainVals = {
     loading: boolean;
     loadedWeb3: boolean;
     connectMetaMask: ()=>void;
+    setFingerprint: (fingerprint: string) => void;
 }
 
 export const Blockchain = createContext<BlockchainVals>(null);
@@ -48,15 +49,21 @@ export default function BlockchainProvider({ children }: { children: ReactNode }
         isLoading(false);
     }
 
+    async function setFingerprint(fingerprint: string) {
+        const tx = await contract.setFingerprint(fingerprint);
+        await tx.wait();
+    }
+
     return (
         <Blockchain.Provider value={{
-            address: "asdf",
+            address: signer.address,
             signer: signer,
             provider: provider,
             contract: contract,
             loading: loading,
             loadedWeb3: loadedWeb3,
-            connectMetaMask: connectMetaMask,
+            connectMetaMask,
+            setFingerprint
         }}>
             {children}
         </Blockchain.Provider>
