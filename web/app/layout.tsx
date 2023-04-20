@@ -2,6 +2,7 @@
 import './globals.css'
 import  BlockchainProvider from "./blockchain";
 import WalletButton from '@/components/WalletButton';
+import Navbar from '@/components/navbar';
 
 
 export default function RootLayout({
@@ -18,9 +19,9 @@ export default function RootLayout({
       <head />
       <body>
         <BlockchainProvider>
-            <nav>
+            <Navbar>
               <WalletButton/>          
-            </nav>
+            </Navbar>
             { children }
         </BlockchainProvider>
     </body>
