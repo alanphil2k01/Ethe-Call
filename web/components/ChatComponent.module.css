@@ -1,0 +1,94 @@
+.container {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    background-color: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    height:550px;
+    width: 300px;
+  }
+  
+  .chatContainer {
+    max-height: 550px;
+    overflow-y: auto;
+  }
+  
+  .list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .li {
+    margin-bottom: 8px;
+  }
+  
+  .inputContainer {
+    display: flex;
+    border-color: black;
+  }
+  
+  .input {
+    flex: 1;
+    padding: 8px;
+  }
+  
+  .button {
+    margin-left: 8px;
+    position: fixed;
+    bottom: 25px;
+    right: 30px;
+  }
+  
+  .openButton {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #ccc;
+    color: #fff;
+    border: none;
+    
+    width: 150px;
+    height: 40px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  
+  .closeButton {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #ccc;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  
+  .topRight {
+    top: 10px;
+    right: 10px;
+  }
+  
+  .titleBar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background-color : #ccc;
+    color: #fff;
+    }
+    
+    .chatHeading {
+    margin: 0;
+    }
+  .input{
+    background-color : lightcyan;
+    position: fixed;
+    bottom: 20px;
+    
+   
+  }
