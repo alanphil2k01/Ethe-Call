@@ -3,7 +3,8 @@
 import { ChangeEventHandler, useEffect, useRef, useState } from "react";
 import io, { Socket } from "socket.io-client";
 import { ClientToServerEvents, ServerToClientEvents } from '@/types/socket';
-
+import MyVideoComponent from "@/components/MyVideoComponent";
+import ChatComponent from "@/components/ChatComponent";
 type DeviceInfo = {
     id: string,
     label: string
@@ -488,26 +489,12 @@ const Room = ({ params }) => {
             }} >Check Status</button>
             */}
 
-            <video autoPlay muted className="h-80 w-80 bg-black" ref={userVideoRef} />
-
-            {peers.map((peer, index) => {
-                    return (
-                            <div key={index}>
-                            <Video stream={peer.remoteStream} />
-                            </div>
-                           );
-                    })}
+            <MyVideoComponent stream={userVideoRef} peers={peers} />
 
             <DeviceList deviceList={audioInList.current} onChange={(e) => {setAudioIn(e.target.value)}} />
             <DeviceList deviceList={audioOutList.current} />
             <DeviceList deviceList={cameraList.current} onChange={(e) => {setCamera(e.target.value)}} />
-            <Chat msgs={chatMsgs} />
-            <input type="text" ref={chatInputRef} onKeyDown={(event) => {
-                if (event.key == "Enter") {
-                    sendChatMsg();
-                }
-            }}/>
-            <button onClick={sendChatMsg}>Send</button>
+            <ChatComponent msgs={chatMsgs} chatInputRef={chatInputRef} sendChatMsg={sendChatMsg} />
         </div>
     );
 };
