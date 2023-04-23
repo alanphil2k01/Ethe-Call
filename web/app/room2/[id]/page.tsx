@@ -366,12 +366,12 @@ const Room = ({ params }) => {
     }
 
     useEffect(() => {
-        if (!loadedWeb3) {
+        /*if (!loadedWeb3) {
             alert("Wallet not connected");
             router.push("/");
             router.forward();
             return;
-        }
+        } */
         if (!certificates) {
             alert("Please generate a certificate");
             router.push("/profile");
