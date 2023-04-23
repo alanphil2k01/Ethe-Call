@@ -10,7 +10,7 @@ import styles from './page.module.css';
 export default function Home() {
   const router = useRouter()
   const [roomName, setRoomName] = useState('')
-  const { signer, loadedWeb3, loading, connectMetaMask } = useContext(Blockchain);
+  const { signer, loadedWeb3 } = useContext(Blockchain);
 
   const joinRoom = () => {
     router.push(`/room/${roomName || Math.random().toString(36).slice(2)}`)
@@ -45,8 +45,10 @@ export default function Home() {
         <div className={`${styles.container}`}>
           <button onClick={joinRoom} className={`${styles.btn2}`}>Join Room</button>
           <button onClick={createRoom} className={`${styles.btn2}`}>Create Room</button>
+          <Link href="/profile">
+              <button className={`${styles.btn2}`}>Profile</button>
+          </Link>
         </div>
-        <Link href="" />
       </main>
     </div>
   )

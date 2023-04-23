@@ -1,14 +1,22 @@
+"use client";
+
 import { ReactNode, createContext, useState } from "react";
 
 type FingerprintVals = {
-    generateNewCertificate: () => void;
+    certificates: RTCCertificate[];
+    generateNewCertificate: () => Promise<RTCCertificate>;
     setCertificate: (cert: RTCCertificate) => void;
     getCertificate: () => string;
+    getUserFingerprint: () => string;
+}
+
+export function extractFingerprint(sdp: RTCSessionDescription): string {
+    return sdp.sdp.match(/a=fingerprint:sha-256\s(.+)/)[1];
 }
 
 export const Fingerprint = createContext<FingerprintVals>(null);
 
-export default function FingerprintProvider({ children }: { children: ReactNode }) {
+export function FingerprintProvider({ children }: { children: ReactNode }) {
     const [certificates, setCertificates] = useState<RTCCertificate[]>([])
 
     const config = {
@@ -18,11 +26,10 @@ export default function FingerprintProvider({ children }: { children: ReactNode 
         hash: "SHA-256",
     };
 
-    function generateNewCertificate()  {
-        RTCPeerConnection.generateCertificate(config)
-            .then((cert) => {
-                setCertificates([cert]);
-            });
+    async function generateNewCertificate()  {
+        const cert  = await RTCPeerConnection.generateCertificate(config)
+        setCertificates([cert]);
+        return cert;
     }
 
     function setCertificate(cert: RTCCertificate) {
@@ -33,11 +40,17 @@ export default function FingerprintProvider({ children }: { children: ReactNode 
         return JSON.stringify(certificates);
     }
 
+    function getUserFingerprint(): string {
+        return certificates[0].getFingerprints[0];
+    }
+
     return (
         <Fingerprint.Provider value={{
+            certificates,
             generateNewCertificate,
             setCertificate,
             getCertificate,
+            getUserFingerprint,
         }}>
             { children }
         </Fingerprint.Provider>

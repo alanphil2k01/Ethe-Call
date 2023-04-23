@@ -1,3 +1,5 @@
+"use client";
+
 import { useContext } from 'react'
 import { Blockchain } from '../app/blockchain';
 import styles from './WalletButton.module.css';

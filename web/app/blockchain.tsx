@@ -1,7 +1,9 @@
+"use client";
+
 import contractABI from "@common/EtheCall.json";
 import contract_addr from "@common/contract_addr";
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
-import { ReactNode, createContext, useState } from "react";
+import { ReactNode, createContext, useEffect, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 
 declare global {
@@ -10,20 +12,20 @@ declare global {
   }
 }
 
-type BlockchainVals = {
-    address: string;
+interface BlockchainVals {
     signer: JsonRpcSigner;
     contract: Contract;
     provider: BrowserProvider;
     loading: boolean;
     loadedWeb3: boolean;
-    connectMetaMask: ()=>void;
-    setFingerprint: (fingerprint: string) => void;
+    connectMetaMask: () => void;
+    setFingerprint: (fingerprint: string) => Promise<void>;
+    setNickname: (nickname: string) => Promise<void>;
 }
 
 export const Blockchain = createContext<BlockchainVals>(null);
 
-export default function BlockchainProvider({ children }: { children: ReactNode }) {
+export function BlockchainProvider({ children }: { children: ReactNode }) {
     const [provider, setProvider] = useState<BrowserProvider>();
     const [signer, setSigner] = useState<JsonRpcSigner>();
     const [contract, setContract] = useState<Contract>();
@@ -32,16 +34,17 @@ export default function BlockchainProvider({ children }: { children: ReactNode }
 
     async function loadWeb3() {
         const provider = new BrowserProvider(window.ethereum)
-        setProvider(provider);
         const signer = await provider.getSigner();
+        const contract = new Contract(contract_addr, contractABI.abi, signer);
+        setProvider(provider);
         setSigner(signer);
-        const contract = new Contract(contract_addr, contractABI.abi, signer)
         setContract(contract);
     }
 
     function connectMetaMask() {
         isLoading(true);
         if (window.ethereum == null) {
+            alert("Please install metamask");
         } else {
             loadWeb3()
             .then(() => setLoadedWeb3(true));
@@ -49,21 +52,39 @@ export default function BlockchainProvider({ children }: { children: ReactNode }
         isLoading(false);
     }
 
+    useEffect(() => {
+        connectMetaMask();
+    }, []);
+
     async function setFingerprint(fingerprint: string) {
-        const tx = await contract.setFingerprint(fingerprint);
-        await tx.wait();
+        console.log(fingerprint);
+        console.log(fingerprint.length);
+
+        try {
+            await contract.setFingerprint(fingerprint);
+        } catch (err) {
+            alert(err?.reason);
+        }
+    }
+
+    async function setNickname(nickname: string) {
+        try {
+            await contract.setNickname(nickname);
+        } catch (err) {
+            alert(err.reason);
+        }
     }
 
     return (
         <Blockchain.Provider value={{
-            address: signer.address,
-            signer: signer,
-            provider: provider,
+            signer,
+            provider,
             contract: contract,
-            loading: loading,
-            loadedWeb3: loadedWeb3,
+            loading,
+            loadedWeb3,
             connectMetaMask,
-            setFingerprint
+            setFingerprint,
+            setNickname,
         }}>
             {children}
         </Blockchain.Provider>

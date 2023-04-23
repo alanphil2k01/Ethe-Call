@@ -1,10 +1,13 @@
 'use client';
 
-import { ChangeEventHandler, useEffect, useRef, useState } from "react";
+import { ChangeEventHandler, useContext, useEffect, useRef, useState } from "react";
 import io, { Socket } from "socket.io-client";
 import { ClientToServerEvents, ServerToClientEvents } from '@/types/socket';
 import MyVideoComponent from "@/components/MyVideoComponent";
 import ChatComponent from "@/components/ChatComponent";
+import { Blockchain } from "@/app/blockchain";
+import { Fingerprint }  from "@/app/fingerprint";
+import { useRouter } from "next/navigation";
 
 type DeviceInfo = {
     id: string,
@@ -262,26 +265,6 @@ function useMediaDevices() {
     };
 }
 
-function useRTCCertificate() {
-    const certificates = useRef<RTCCertificate[]>([])
-
-    const config = {
-        name: "RSASSA-PKCS1-v1_5",
-        modulusLength: 2048,
-        publicExponent: new Uint8Array([1, 0, 1]),
-        hash: "SHA-256",
-    };
-
-    useEffect(() => {
-        RTCPeerConnection.generateCertificate(config)
-            .then((cert) => {
-                certificates.current = [cert];
-            });
-    }, []);
-
-    return { certificates };
-}
-
 function Video ({ stream }: { stream: MediaStream }) {
     const peerVidRef = useRef<HTMLVideoElement>();
 
@@ -335,7 +318,9 @@ const Room = ({ params }) => {
         setCamera,
     } = useMediaDevices();
 
-    const { certificates } = useRTCCertificate();
+    const router = useRouter();
+    const { certificates } = useContext(Fingerprint);
+    const { loadedWeb3, signer, setFingerprint } = useContext(Blockchain);
 
     function getSocket(url: string) {
         console.log("connecting to ", url);
@@ -381,6 +366,16 @@ const Room = ({ params }) => {
     }
 
     useEffect(() => {
+        if (!loadedWeb3) {
+            alert("Wallet not connected");
+            router.push("/");
+            router.forward();
+            return;
+        }
+        if (!certificates) {
+            alert("Please generate a certificate");
+            router.push("/profile");
+        }
         if (userStreamRef.current && !isLoadingStream) {
             userVideoRef.current.srcObject = userStreamRef.current;
             userVideoRef.current.onloadedmetadata = () => {
@@ -408,7 +403,7 @@ const Room = ({ params }) => {
             addr: socketRef.current.id,
             stream: userStreamRef.current,
             initiator: true,
-            certificates: certificates.current,
+            certificates: certificates,
             dcMessageHandler: dcMessageHandler
         });
         peer.pc.onicecandidate = (event) => {
@@ -438,7 +433,7 @@ const Room = ({ params }) => {
             initiator: false,
             addr: callerID,
             stream,
-            certificates: certificates.current,
+            certificates: certificates,
             dcMessageHandler: dcMessageHandler
         })
         peer.pc.onicecandidate = (event) => {
