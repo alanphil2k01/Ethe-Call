@@ -9,6 +9,13 @@ import { Blockchain } from "@/app/blockchain";
 import { Fingerprint }  from "@/app/fingerprint";
 import { useRouter } from "next/navigation";
 import { Peer } from "@/app/peer";
+import styles from './page.module.css';
+//import  IconComponent  from './IconComponent';
+import Image from 'next/image';
+import camera from "../../../../src/camera.png";
+import mic from "../../../../src/mic.png";
+import phone from "../../../../src/phone.png";
+import invite from "../../../../src/invite.png";
 
 type DeviceInfo = {
     id: string,
@@ -133,6 +140,7 @@ function useMediaDevices() {
     async function getUserStream() {
         try {
             userStreamRef.current = await navigator.mediaDevices.getUserMedia(vidStreamConstraints.current)
+            //vidStreamConstraints = {audio: true, video: true}
         } catch (err) {
             console.log(err);
         }
@@ -368,7 +376,6 @@ const Room = ({ params }) => {
     return (
         <div>
             <div className="h-5 bg-white"></div>
-
             {/*
             <button onClick={() => {
                 peersRef.current.forEach(peer => {
@@ -378,10 +385,22 @@ const Room = ({ params }) => {
                     console.log("Can Trickle: ", peer.peer.pc.canTrickleIceCandidates);
                 })
             }} >Check Status</button>
-            */}
+        */}
 
             <MyVideoComponent stream={userVideoRef} peers={peers} />
-
+            <div className={`${styles.controls}`}>
+                <div className={`${styles.controlContainer} ${styles.cameraBtn}`}>
+                    <Image src={camera} alt="camera" className={`${styles.imgCamera} ${styles.images}`}/>
+                </div>
+                <div className={`${styles.controlContainer} ${styles.micBtn}`}>
+                    <Image src={mic} alt="mic" className={`${styles.imgMic} ${styles.images}`}/>
+                </div>
+                <div className={`${styles.controlContainer} ${styles.leaveBtn}`}>
+                    <a href="/">
+                        <Image src={phone} alt="phone" className={`${styles.imgPhone} ${styles.images}`}/>
+                    </a>
+                </div>
+            </div>
             <DeviceList deviceList={audioInList.current} onChange={(e) => {setAudioIn(e.target.value)}} />
             <DeviceList deviceList={audioOutList.current} />
             <DeviceList deviceList={cameraList.current} onChange={(e) => {setCamera(e.target.value)}} />
