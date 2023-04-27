@@ -17,14 +17,10 @@ contract EtheCall {
         uint32 UserCount;
     }
 
-    struct UserData {
-        string nickname;
-        string fingerprint;
-    }
-
     mapping (string => Call) calls;
     mapping(string => UserInCall[]) InCallUsers;
-    mapping (address => UserData) Users;
+    mapping (address => string) UserFingerprints;
+    mapping (address => string) UserToNickname;
     mapping (string => address) NicknamesToUser;
 
     modifier onlyHost(string memory _id) {
@@ -34,14 +30,26 @@ contract EtheCall {
         _;
     }
 
+    function getFingerprint(address user) public view returns (string memory) {
+        return UserFingerprints[user];
+    }
+
+    function getNickname(address user) public view returns (string memory) {
+        return UserToNickname[user];
+    }
+
+    function nicknameToAddress(string memory nickname) public view returns (address) {
+        return NicknamesToUser[nickname];
+    }
+
     function setNickname(string memory nickname) public {
         require(NicknamesToUser[nickname] == address(0), "Nickname already in use");
         NicknamesToUser[nickname] = msg.sender;
-        Users[msg.sender].nickname = nickname;
+        UserToNickname[msg.sender] = nickname;
     }
 
     function setFingerprint(string memory fingerprint) public {
-        Users[msg.sender].fingerprint = fingerprint;
+        UserFingerprints[msg.sender] = fingerprint;
     }
 
     function newCall(string memory call_id) public {
@@ -49,6 +57,17 @@ contract EtheCall {
         Call memory _call;
         _call.Host = msg.sender;
         calls[call_id] = _call;
+        InCallUsers[call_id].push(UserInCall(msg.sender, true));
+    }
+
+    function newCall(string memory call_id, address[] memory users, address[] memory admins) public {
+        newCall(call_id);
+        for (uint i = 0; i < users.length; i++) {
+            InCallUsers[call_id].push(UserInCall(users[i], false));
+        }
+        for (uint i = 0; i < admins.length; i++) {
+            InCallUsers[call_id].push(UserInCall(admins[i], true));
+        }
     }
 
     function isAdmitted(string memory call_id, address user) public view returns (bool) {
@@ -62,10 +81,7 @@ contract EtheCall {
 
     function admitUser(string memory call_id, address new_callee) public onlyHost(call_id) {
         require(isAdmitted(call_id, new_callee), "User already admitted");
-        UserInCall memory user;
-        user.addr = new_callee;
-        user.admin = false;
-        InCallUsers[call_id].push(user);
+        InCallUsers[call_id].push(UserInCall(new_callee, false));
     }
 
     function isAdmin(string memory call_id, address user) public view returns (bool) {
@@ -84,14 +100,15 @@ contract EtheCall {
                 return;
             }
         }
-
-        UserInCall memory new_admin;
-        new_admin.addr = user;
-        new_admin.admin = true;
-        InCallUsers[call_id].push(new_admin);
+        InCallUsers[call_id].push(UserInCall(user, true));
     }
 
     function changeHost(string memory call_id, address new_host) public onlyHost(call_id) {
         calls[call_id].Host = new_host;
+    }
+
+    function getHost(string memory call_id) public view returns (address) {
+        require(calls[call_id].Host != address(0), "Call ID does not exist");
+        return calls[call_id].Host;
     }
 }

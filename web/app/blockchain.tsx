@@ -2,7 +2,7 @@
 
 import contractABI from "@common/EtheCall.json";
 import contract_addr from "@common/contract_addr";
-import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
+import { BrowserProvider, Contract, JsonRpcSigner, ZeroAddress } from "ethers";
 import { ReactNode, createContext, useEffect, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 
@@ -21,6 +21,12 @@ interface BlockchainVals {
     connectMetaMask: () => void;
     setFingerprint: (fingerprint: string) => Promise<void>;
     setNickname: (nickname: string) => Promise<void>;
+    newCall: (call_id: string) => Promise<void>;
+    newCallWithUsers: (call_id: string, users: string[], admins: string[]) => Promise<void>;
+    getNickname: (user: string) => Promise<string>;
+    getFingerprint: (user: string) => Promise<string>;
+    nicknameToAddress: (nickname: string) => Promise<string>;
+    getHost: (call_id: string) => Promise<string>;
 }
 
 export const Blockchain = createContext<BlockchainVals>(null);
@@ -75,6 +81,48 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
         }
     }
 
+    async function newCall(call_id: string) {
+        try {
+            const tx = await contract.newCall(call_id);
+            await tx.wait();
+        } catch (err) {
+            alert(err.reason);
+        }
+    }
+
+    async function newCallWithUsers(call_id: string, users: string[], admins: string[]) {
+        try {
+            const tx = await contract.newCall(call_id, users, admins);
+            await tx.wait();
+        } catch (err) {
+            alert(err?.reason);
+        }
+    }
+
+    async function getNickname(user: string): Promise<string> {
+        const nickname = await contract.getNickname(user);
+        return nickname;
+    }
+
+    async function getFingerprint(user: string): Promise<string> {
+        const fingerprint = await contract.getFingerprint(user);
+        return fingerprint;
+    }
+
+    async function nicknameToAddress(nickname: string): Promise<string> {
+        const address = await contract.nicknameToAddress(nickname);
+        return address;
+    }
+
+    async function getHost(call_id: string): Promise<string> {
+        try {
+            const host: string = await contract.getHost(call_id);
+            return host;
+        } catch (err) {
+            console.log(err?.reason);
+        }
+    }
+
     return (
         <Blockchain.Provider value={{
             signer,
@@ -85,6 +133,12 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
             connectMetaMask,
             setFingerprint,
             setNickname,
+            newCall,
+            newCallWithUsers,
+            getNickname,
+            getFingerprint,
+            nicknameToAddress,
+            getHost,
         }}>
             {children}
         </Blockchain.Provider>
