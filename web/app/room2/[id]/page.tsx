@@ -389,10 +389,10 @@ const Room = ({ params }) => {
 
             <MyVideoComponent stream={userVideoRef} peers={peers} />
             <div className={`${styles.controls}`}>
-                <div className={`${styles.controlContainer} ${styles.cameraBtn}`}>
+                <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleCamera()})}>
                     <Image src={camera} alt="camera" className={`${styles.imgCamera} ${styles.images}`}/>
                 </div>
-                <div className={`${styles.controlContainer} ${styles.micBtn}`}>
+                <div className={`${styles.controlContainer} ${styles.micBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleMic()})}>
                     <Image src={mic} alt="mic" className={`${styles.imgMic} ${styles.images}`}/>
                 </div>
                 <div className={`${styles.controlContainer} ${styles.leaveBtn}`}>

@@ -62,6 +62,30 @@ export class Peer {
         }
     }
 
+    async toggleCamera(){
+        let videoTrack = this.userStream.getTracks().find(track => track.kind === 'video')
+
+        if(videoTrack.enabled){
+            videoTrack.enabled = false;
+            //style the button
+        }else{
+            videoTrack.enabled = true;
+            //style the button
+        }
+    }
+    
+    async toggleMic(){
+        let audioTrack = this.userStream.getTracks().find(track => track.kind === 'audio')
+
+        if(audioTrack.enabled){
+            audioTrack.enabled = false;
+            //style the button
+        }else{
+            audioTrack.enabled = true;
+            //style the button
+        }
+    }
+    
     async createSDP(): Promise<RTCSessionDescription> {
         if (!this.initiator) {
             return;
