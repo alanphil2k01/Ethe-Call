@@ -2,7 +2,7 @@
 
 import contractABI from "@common/EtheCall.json";
 import contract_addr from "@common/contract_addr";
-import { BrowserProvider, Contract, JsonRpcSigner, ZeroAddress } from "ethers";
+import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
 import { ReactNode, createContext, useEffect, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 
@@ -41,6 +41,10 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
     async function loadWeb3() {
         const provider = new BrowserProvider(window.ethereum)
         const signer = await provider.getSigner();
+        await (window as any)?.ethereum?.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xaa36a7' }],
+        });
         const contract = new Contract(contract_addr, contractABI.abi, signer);
         setProvider(provider);
         setSigner(signer);
