@@ -17,7 +17,7 @@ export default function users() {
     const [selectedNumber, setSelectedNumber] = useState(1);
     const [callId, setCallId] = useState<string>("");
     const users = useRef<UserInput[]>(Array(100).fill({ user: "", admin: false }));
-    const { newCallWithUsers, nicknameToAddress, getHost } = useContext(Blockchain);
+    const { loadedWeb3, newCallWithUsers, nicknameToAddress, getHost } = useContext(Blockchain);
 
     const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
         setSelectedNumber(Number(event.target.value));
@@ -52,6 +52,10 @@ export default function users() {
     async function createRoom(call_id: string) {
         if (call_id === "") {
             alert("Please enter a call ID");
+            return;
+        }
+        if (!loadedWeb3) {
+            alert("Please connect your Meteamask Wallet");
             return;
         }
         const nameList = users.current.slice(0, selectedNumber);

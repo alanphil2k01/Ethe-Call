@@ -2,28 +2,38 @@
 
 import Head from 'next/head'
 import { useRouter } from 'next/navigation'
-import { useState, useEffect, useContext } from 'react'
+import { useState, useContext } from 'react'
 import { Blockchain } from './blockchain';
 import styles from './page.module.css';
 
 export default function Home() {
   const router = useRouter()
   const [roomName, setRoomName] = useState('')
-  const { signer, loadedWeb3 } = useContext(Blockchain);
+  const { roomExists, loadedWeb3 } = useContext(Blockchain);
 
-  const joinRoom = () => {
+  async function joinRoom() {
+    if (!loadedWeb3) {
+        alert("Please connect your Meteamask Wallet");
+        return;
+    }
+    if (roomName === "") {
+        alert("Room ID is required");
+        return;
+    }
+    if (await roomExists(roomName)) {
+        alert("Room ID does not exist");
+        return;
+    }
     router.push(`/room/${roomName || Math.random().toString(36).slice(2)}`)
   }
 
   const createRoom = () => {
+    if (!loadedWeb3) {
+        alert("Please connect your Meteamask Wallet");
+        return;
+    }
     router.push(`/createRoom/`)
   }
-
-  useEffect(() => {
-      if (loadedWeb3) {
-          signer?.getAddress().then(addr => console.log(addr));
-      }
-  }, [loadedWeb3]);
 
   return (
     <div>

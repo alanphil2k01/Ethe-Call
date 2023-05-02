@@ -2,7 +2,7 @@
 
 import contractABI from "@common/EtheCall.json";
 import contract_addr from "@common/contract_addr";
-import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
+import { BrowserProvider, Contract, JsonRpcSigner, ZeroAddress } from "ethers";
 import { ReactNode, createContext, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 
@@ -27,6 +27,7 @@ interface BlockchainVals {
     getFingerprint: (user: string) => Promise<string>;
     nicknameToAddress: (nickname: string) => Promise<string>;
     getHost: (call_id: string) => Promise<string>;
+    roomExists: (call_id: string) => Promise<Boolean>;
 }
 
 export const Blockchain = createContext<BlockchainVals>(null);
@@ -43,6 +44,8 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
         window.ethereum.on('accountsChanged', function (accounts) {
             const account = accounts[0];
             console.log(account);
+            setLoadedWeb3(false);
+            connectMetaMask();
         });
         const signer = await provider.getSigner();
         await (window as any)?.ethereum?.request({
@@ -127,6 +130,19 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
         }
     }
 
+    async function roomExists(call_id: string): Promise<Boolean> {
+        try {
+            const host: string = await contract.getHost(call_id);
+            if (host === ZeroAddress) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (err) {
+            console.log(err?.reason);
+        }
+    }
+
     return (
         <Blockchain.Provider value={{
             signer,
@@ -143,6 +159,7 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
             getFingerprint,
             nicknameToAddress,
             getHost,
+            roomExists,
         }}>
             {children}
         </Blockchain.Provider>

@@ -108,7 +108,6 @@ contract EtheCall {
     }
 
     function getHost(string memory call_id) public view returns (address) {
-        require(calls[call_id].Host != address(0), "Call ID does not exist");
         return calls[call_id].Host;
     }
 }
