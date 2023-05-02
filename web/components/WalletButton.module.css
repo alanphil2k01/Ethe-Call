@@ -18,3 +18,24 @@
 .button:hover {
     background-color: rgba(0, 136, 169, 0.8);
 }
+
+.button_active {
+    font-family: sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    color: #edf0f1;
+    text-decoration: none;
+    padding: 9px 25px;
+    background-color: rgba(0, 169, 136, 1);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease 0s;
+    text-overflow: ellipsis;
+    width: 14rem;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.button_active:hover {
+    background-color: rgba(0, 169, 136, 0.8);
+}

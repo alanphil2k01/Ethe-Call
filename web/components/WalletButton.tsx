@@ -41,6 +41,6 @@ export default function WalletButton() {
             }} onMouseLeave={() => {
                 if (!loadedWeb3) return;
                 setText("Hi, " + user)
-            }} className={styles.button}>{text}</button>
+            }} className={ !loadedWeb3 ? styles.button : styles.button_active }>{text}</button>
     );
 }
