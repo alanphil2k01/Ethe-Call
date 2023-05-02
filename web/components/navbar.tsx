@@ -1,7 +1,8 @@
+import { ReactNode } from 'react';
 import styles from './navbar.module.css';
 import WalletButton from '@/components/WalletButton';
 
-export default function Navbar(props){
+export default function Navbar({ children }: { children: ReactNode }){
     return (
         <main className={styles.main}>
             <header className={styles.header}>
@@ -12,7 +13,7 @@ export default function Navbar(props){
                         <li className={styles.li}><a href="#" className={styles.a}>Project</a></li>
                         <li className={styles.li}><a href="#" className={styles.a}>About</a></li>
                     </ul>
-                    {props.children}
+                    {children}
                 </nav>
                 <WalletButton></WalletButton>
             </header>

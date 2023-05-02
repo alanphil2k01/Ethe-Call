@@ -3,7 +3,7 @@
 import contractABI from "@common/EtheCall.json";
 import contract_addr from "@common/contract_addr";
 import { BrowserProvider, Contract, JsonRpcSigner } from "ethers";
-import { ReactNode, createContext, useEffect, useState } from "react";
+import { ReactNode, createContext, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 
 declare global {
@@ -39,7 +39,11 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
     const [loadedWeb3, setLoadedWeb3] = useState(false);
 
     async function loadWeb3() {
-        const provider = new BrowserProvider(window.ethereum)
+        const provider = new BrowserProvider(window.ethereum);
+        window.ethereum.on('accountsChanged', function (accounts) {
+            const account = accounts[0];
+            console.log(account);
+        });
         const signer = await provider.getSigner();
         await (window as any)?.ethereum?.request({
             method: 'wallet_switchEthereumChain',
@@ -61,10 +65,6 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
         }
         isLoading(false);
     }
-
-    useEffect(() => {
-        connectMetaMask();
-    }, []);
 
     async function setFingerprint(fingerprint: string) {
         console.log(fingerprint);

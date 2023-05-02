@@ -9,6 +9,10 @@
     border-radius: 50px;
     cursor: pointer;
     transition: all 0.3s ease 0s;
+    text-overflow: ellipsis;
+    width: 14rem;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .button:hover {

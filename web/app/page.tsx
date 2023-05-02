@@ -1,7 +1,6 @@
 'use client';
 
 import Head from 'next/head'
-import Link from 'next/link';
 import { useRouter } from 'next/navigation'
 import { useState, useEffect, useContext } from 'react'
 import { Blockchain } from './blockchain';
@@ -45,9 +44,6 @@ export default function Home() {
         <div className={`${styles.container}`}>
           <button onClick={joinRoom} className={`${styles.btn2}`}>Join Room</button>
           <button onClick={createRoom} className={`${styles.btn2}`}>Create Room</button>
-          <Link href="/profile">
-              <button className={`${styles.btn2}`}>Profile</button>
-          </Link>
         </div>
       </main>
     </div>
