@@ -16,6 +16,7 @@ interface BlockchainVals {
     signer: JsonRpcSigner;
     contract: Contract;
     provider: BrowserProvider;
+    user: string;
     loading: boolean;
     loadedWeb3: boolean;
     connectMetaMask: () => void;
@@ -38,27 +39,31 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
     const [provider, setProvider] = useState<BrowserProvider>();
     const [signer, setSigner] = useState<JsonRpcSigner>();
     const [contract, setContract] = useState<Contract>();
+    const [user, setUser] = useState("");
     const [loading, isLoading] = useState(false);
     const [loadedWeb3, setLoadedWeb3] = useState(false);
 
     async function loadWeb3() {
         const provider = new BrowserProvider(window.ethereum);
-        window.ethereum.on('accountsChanged', function (accounts) {
-            const account = accounts[0];
-            console.log(account);
-            setLoadedWeb3(false);
-            connectMetaMask();
-        });
         const signer = await provider.getSigner();
-        await (window as any)?.ethereum?.request({
-            method: 'wallet_switchEthereumChain',
-            // params: [{ chainId: '0x7a69' }], // hardhat node
-            params: [{ chainId: '0xaa36a7' }], // Sepolia testnet
-        });
         const contract = new Contract(contract_addr, contractABI.abi, signer);
+        const user = await contract.getNickname(signer.address);
+        setUser(user !== "" ? user : signer.address);
         setProvider(provider);
         setSigner(signer);
         setContract(contract);
+        window.ethereum.on('accountsChanged', connectMetaMask);
+        await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0x7a69' }], // hardhat node
+            // params: [{ chainId: '0xaa36a7' }], // Sepolia testnet
+        });
+        contract.on("setNicknameEvent", (address, nickname) => {
+            console.log("Got new nickname: " + nickname);
+            if (address === signer.address) {
+                setUser(nickname);
+            }
+        });
     }
 
     function connectMetaMask() {
@@ -169,7 +174,8 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
         <Blockchain.Provider value={{
             signer,
             provider,
-            contract: contract,
+            contract,
+            user,
             loading,
             loadedWeb3,
             connectMetaMask,

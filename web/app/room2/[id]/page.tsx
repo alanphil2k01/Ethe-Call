@@ -16,6 +16,7 @@ import camera from "../../../../src/camera.png";
 import mic from "../../../../src/mic.png";
 import phone from "../../../../src/phone.png";
 import invite from "../../../../src/invite.png";
+import Link from "next/link";
 
 type DeviceInfo = {
     id: string,
@@ -398,9 +399,9 @@ const Room = ({ params }) => {
                     <Image src={mic} alt="mic" className={`${styles.imgMic} ${styles.images}`}/>
                 </div>
                 <div className={`${styles.controlContainer} ${styles.leaveBtn}`}>
-                    <a href="/">
+                    <Link href="/">
                         <Image src={phone} alt="phone" className={`${styles.imgPhone} ${styles.images}`}/>
-                    </a>
+                    </Link>
                 </div>
             </div>
             <DeviceList deviceList={audioInList.current} onChange={(e) => {setAudioIn(e.target.value)}} />

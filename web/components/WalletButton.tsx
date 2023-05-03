@@ -6,26 +6,17 @@ import styles from './WalletButton.module.css';
 import { useRouter } from 'next/navigation';
 
 export default function WalletButton() {
-    const { signer, loadedWeb3, connectMetaMask, getNickname } = useContext(Blockchain);
+    const { loadedWeb3, user, connectMetaMask, getNickname } = useContext(Blockchain);
     const [text, setText] = useState("Connect to MetaMask");
-    const [user, setUser] = useState("Connect to MetaMask");
     const router = useRouter();
 
     useEffect(() => {
         if (loadedWeb3) {
-            getNickname(signer.address).then((nickname) => {
-                if (nickname !== "") {
-                    setText("Hi, " + nickname);
-                    setUser(nickname);
-                } else {
-                    setText("Hi, " + signer.address);
-                    setUser(signer.address);
-                }
-            });
+            setText("Hi, " + user);
         } else {
             setText("Connect to MetaMask");
         }
-    }, [loadedWeb3]);
+    }, [user]);
 
     function walletBtnAction() {
         if (loadedWeb3) {

@@ -30,6 +30,11 @@ contract EtheCall {
         _;
     }
 
+    event setNicknameEvent(
+        address user,
+        string nickname
+    );
+
     function getFingerprint(address user) public view returns (string memory) {
         return UserFingerprints[user];
     }
@@ -46,6 +51,7 @@ contract EtheCall {
         require(NicknamesToUser[nickname] == address(0), "Nickname already in use");
         NicknamesToUser[nickname] = msg.sender;
         UserToNickname[msg.sender] = nickname;
+        emit setNicknameEvent(msg.sender, nickname);
     }
 
     function setFingerprint(string memory fingerprint) public {
