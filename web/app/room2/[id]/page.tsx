@@ -212,7 +212,7 @@ const Room = ({ params }) => {
 
     const router = useRouter();
     const { certificates } = useContext(Fingerprint);
-    const { loadedWeb3, signer, roomExists, isAdmitted } = useContext(Blockchain);
+    const { loadedWeb3, signer, roomExists, isAdmitted, signMessage } = useContext(Blockchain);
 
     function getSocket(url: string) {
         console.log("connecting to ", url);
@@ -257,7 +257,7 @@ const Room = ({ params }) => {
         });
     }
 
-    useEffect(() => {
+    function verifyUser() {
         if (!loadedWeb3) {
             alert("Please connect your Meteamask Wallet");
             router.push("/");
@@ -280,6 +280,10 @@ const Room = ({ params }) => {
             router.push("/profile");
             return;
         }
+    }
+
+    useEffect(() => {
+        // verifyUser();
         if (userStreamRef.current && !isLoadingStream) {
             userVideoRef.current.srcObject = userStreamRef.current;
             userVideoRef.current.onloadedmetadata = () => {
@@ -295,7 +299,7 @@ const Room = ({ params }) => {
                 getSocket("");
         });
 
-    }, [isLoadingStream]);
+    }, [isLoadingStream]);0x3B87223646ACc9A148BA437f21b5ce4c9A35F79a
 
     function dcMessageHandler(event: MessageEvent) {
         const msg = event.data;
@@ -317,6 +321,7 @@ const Room = ({ params }) => {
         }
         peer.createSDP()
         .then((offer) => {
+            signMessage(offer.sdp);
             socketRef.current.emit("send offer", { toUserID, fromUserID, offer })
         });
         peer.pc.ontrack = (event) => {
