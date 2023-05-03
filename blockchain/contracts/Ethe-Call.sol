@@ -71,6 +71,9 @@ contract EtheCall {
     }
 
     function isAdmitted(string memory call_id, address user) public view returns (bool) {
+        if (user == calls[call_id].Host) {
+            return true;
+        }
         for (uint i = 0; i < InCallUsers[call_id].length; i++) {
             if (user == InCallUsers[call_id][i].addr) {
                 return true;
@@ -85,6 +88,9 @@ contract EtheCall {
     }
 
     function isAdmin(string memory call_id, address user) public view returns (bool) {
+        if (user == calls[call_id].Host) {
+            return true;
+        }
         for (uint i = 0; i < InCallUsers[call_id].length; i++) {
             if (user == InCallUsers[call_id][i].addr && InCallUsers[call_id][i].admin) {
                 return true;

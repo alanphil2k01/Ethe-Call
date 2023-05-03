@@ -22,12 +22,14 @@ interface BlockchainVals {
     setFingerprint: (fingerprint: string) => Promise<void>;
     setNickname: (nickname: string) => Promise<void>;
     newCall: (call_id: string) => Promise<void>;
-    newCallWithUsers: (call_id: string, users: string[], admins: string[]) => Promise<void>;
+    newCallWithUsers: (call_id: string, users: string[], admins: string[]) => Promise<Boolean>;
     getNickname: (user: string) => Promise<string>;
     getFingerprint: (user: string) => Promise<string>;
     nicknameToAddress: (nickname: string) => Promise<string>;
     getHost: (call_id: string) => Promise<string>;
     roomExists: (call_id: string) => Promise<Boolean>;
+    isAdmitted: (call_id: string, address: string) => Promise<Boolean>;
+    isAdmin: (call_id: string, address: string) => Promise<Boolean>;
 }
 
 export const Blockchain = createContext<BlockchainVals>(null);
@@ -50,7 +52,8 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
         const signer = await provider.getSigner();
         await (window as any)?.ethereum?.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0xaa36a7' }],
+            // params: [{ chainId: '0x7a69' }], // hardhat node
+            params: [{ chainId: '0xaa36a7' }], // Sepolia testnet
         });
         const contract = new Contract(contract_addr, contractABI.abi, signer);
         setProvider(provider);
@@ -70,21 +73,20 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
     }
 
     async function setFingerprint(fingerprint: string) {
-        console.log(fingerprint);
-        console.log(fingerprint.length);
-
         try {
-            await contract.setFingerprint(fingerprint);
+            const tx = await contract.setFingerprint(fingerprint);
+            await tx.wait();
         } catch (err) {
-            alert(err?.reason);
+            alertErr(err);
         }
     }
 
     async function setNickname(nickname: string) {
         try {
-            await contract.setNickname(nickname);
+            const tx = await contract.setNickname(nickname);
+            await tx.wait();
         } catch (err) {
-            alert(err.reason);
+            alertErr(err);
         }
     }
 
@@ -93,16 +95,36 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
             const tx = await contract.newCall(call_id);
             await tx.wait();
         } catch (err) {
-            alert(err.reason);
+            alertErr(err);
         }
     }
 
-    async function newCallWithUsers(call_id: string, users: string[], admins: string[]) {
+    async function isAdmitted(call_id: string, address: string): Promise<Boolean> {
+        try {
+            const out = await contract.isAdmitted(call_id, address);
+            return out;
+        } catch (err) {
+            alertErr(err);
+        }
+    }
+
+    async function isAdmin(call_id: string, address: string): Promise<Boolean> {
+        try {
+            const out = await contract.isAdmin(call_id, address);
+            return out;
+        } catch (err) {
+            alertErr(err);
+        }
+    }
+
+    async function newCallWithUsers(call_id: string, users: string[], admins: string[]): Promise<Boolean> {
         try {
             const tx = await contract.newCall(call_id, users, admins);
             await tx.wait();
+            return true;
         } catch (err) {
-            alert(err?.reason);
+            alertErr(err);
+            return false;
         }
     }
 
@@ -126,7 +148,7 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
             const host: string = await contract.getHost(call_id);
             return host;
         } catch (err) {
-            console.log(err?.reason);
+            alertErr(err);
         }
     }
 
@@ -134,12 +156,12 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
         try {
             const host: string = await contract.getHost(call_id);
             if (host === ZeroAddress) {
-                return true;
-            } else {
                 return false;
+            } else {
+                return true;
             }
         } catch (err) {
-            console.log(err?.reason);
+            alertErr(err);
         }
     }
 
@@ -160,8 +182,20 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
             nicknameToAddress,
             getHost,
             roomExists,
+            isAdmitted,
+            isAdmin,
         }}>
             {children}
         </Blockchain.Provider>
     )
+}
+
+function alertErr(err: any) {
+    if (err.reason) {
+        alert(err.reason);
+    } else {
+        alert("Something went wrong");
+        console.log(err);
+        throw err;
+    }
 }

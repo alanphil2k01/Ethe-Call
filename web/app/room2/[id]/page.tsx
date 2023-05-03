@@ -188,16 +188,6 @@ function DeviceList({ deviceList, onChange}: { deviceList: DeviceInfo[], onChang
     )
 }
 
-function Chat({ msgs }: { msgs: string[] }) {
-    return (
-        <div>
-            <ul>
-                { msgs.map(msg => <li>{msg}</li>)}
-            </ul>
-        </div>
-    )
-}
-
 const Room = ({ params }) => {
     const [peers, setPeers] = useState<Peer[]>([]);
     const userVideoRef = useRef<HTMLVideoElement>();
@@ -221,7 +211,7 @@ const Room = ({ params }) => {
 
     const router = useRouter();
     const { certificates } = useContext(Fingerprint);
-    const { loadedWeb3, signer, setFingerprint } = useContext(Blockchain);
+    const { loadedWeb3, signer, roomExists, isAdmitted } = useContext(Blockchain);
 
     function getSocket(url: string) {
         console.log("connecting to ", url);
@@ -267,15 +257,27 @@ const Room = ({ params }) => {
     }
 
     useEffect(() => {
-        /*if (!loadedWeb3) {
-            alert("Wallet not connected");
+        if (!loadedWeb3) {
+            alert("Please connect your Meteamask Wallet");
             router.push("/");
-            router.forward();
             return;
-        } */
+        }
+        roomExists(roomID).then((val) => {
+            if (!val) {
+                alert("Room ID does not exist");
+                router.push("/");
+            }
+        });
+        isAdmitted(roomID, signer.address).then((val) => {
+            if (!val) {
+                alert("You are not admitted to this room");
+                router.push("/");
+            }
+        });
         if (!certificates) {
             alert("Please generate a certificate");
             router.push("/profile");
+            return;
         }
         if (userStreamRef.current && !isLoadingStream) {
             userVideoRef.current.srcObject = userStreamRef.current;

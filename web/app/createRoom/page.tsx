@@ -50,14 +50,15 @@ export default function users() {
     }
 
     async function createRoom(call_id: string) {
-        if (call_id === "") {
-            alert("Please enter a call ID");
-            return;
-        }
         if (!loadedWeb3) {
             alert("Please connect your Meteamask Wallet");
             return;
         }
+        if (call_id === "") {
+            alert("Please enter a call ID");
+            return;
+        }
+
         const nameList = users.current.slice(0, selectedNumber);
 
         const userList = (await Promise.all(nameList.map(async (name) => {
@@ -84,9 +85,10 @@ export default function users() {
             }
         }))).filter((user) => user);
 
-        await newCallWithUsers(call_id, userList, adminList);
+        if ((await newCallWithUsers(call_id, userList, adminList))) {
+                router.push(`/room2/${call_id}`);
+        }
 
-        router.push(`/room2/${call_id}`);
     }
 
     function test() {
