@@ -2,7 +2,7 @@
 
 import contractABI from "@common/EtheCall.json";
 import contract_addr from "@common/contract_addr";
-import { BrowserProvider, Contract, JsonRpcSigner, ZeroAddress } from "ethers";
+import { BrowserProvider, Contract, JsonRpcSigner, SignatureLike, ZeroAddress, verifyMessage } from "ethers";
 import { ReactNode, createContext, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 
@@ -12,11 +12,25 @@ declare global {
   }
 }
 
+const Message = (address: string) => { return `Sign this message to verify your address
+Address: ${address}`}
+
+export function verifySign(message: string, sig: SignatureLike): Boolean {
+    const address = message.slice(50, message.length);
+    if (address === verifyMessage(message, sig)) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 interface BlockchainVals {
     signer: JsonRpcSigner;
     contract: Contract;
     provider: BrowserProvider;
-    user: string;
+    displayName: string;
+    message: string;
+    sign: string;
     loading: boolean;
     loadedWeb3: boolean;
     connectMetaMask: () => void;
@@ -39,31 +53,42 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
     const [provider, setProvider] = useState<BrowserProvider>();
     const [signer, setSigner] = useState<JsonRpcSigner>();
     const [contract, setContract] = useState<Contract>();
-    const [user, setUser] = useState("");
+    const [displayName, setDisplayName] = useState("");
+    const [message, setMessage] = useState("");
+    const [sign, setSign] = useState("");
     const [loading, isLoading] = useState(false);
     const [loadedWeb3, setLoadedWeb3] = useState(false);
+
+    // window.ethereum.on('accountsChanged', (accounts) => {
+    //     console.log("Running reconnect");
+    //     console.log("Connecting to new account " + accounts[0]);
+    //     connectMetaMask();
+    // });
 
     async function loadWeb3() {
         const provider = new BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new Contract(contract_addr, contractABI.abi, signer);
-        const user = await contract.getNickname(signer.address);
-        setUser(user !== "" ? user : signer.address);
         setProvider(provider);
         setSigner(signer);
         setContract(contract);
-        window.ethereum.on('accountsChanged', connectMetaMask);
         await window.ethereum.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x7a69' }], // hardhat node
-            // params: [{ chainId: '0xaa36a7' }], // Sepolia testnet
+            // params: [{ chainId: '0x7a69' }], // hardhat node
+            params: [{ chainId: '0xaa36a7' }], // Sepolia testnet
         });
         contract.on("setNicknameEvent", (address, nickname) => {
             console.log("Got new nickname: " + nickname);
             if (address === signer.address) {
-                setUser(nickname);
+                setDisplayName(nickname);
             }
         });
+        const nickname = await contract.getNickname(signer.address);
+        setDisplayName(nickname !== "" ? nickname : signer.address);
+        const msg = Message(signer.address);
+        setMessage(msg);
+        const sig = await signer.signMessage(msg);
+        setSign(sig);
     }
 
     function connectMetaMask() {
@@ -175,7 +200,9 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
             signer,
             provider,
             contract,
-            user,
+            displayName,
+            message,
+            sign,
             loading,
             loadedWeb3,
             connectMetaMask,
