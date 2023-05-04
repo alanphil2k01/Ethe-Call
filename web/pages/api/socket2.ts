@@ -35,7 +35,6 @@ const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
     io.on('connection', (socket) => {
         socket.on("join room", (roomID, payload) => {
             socket.data.userData = payload;
-
             if (users[roomID]) {
                 const count = users[roomID].length;
                 if (count === 10) {
@@ -60,7 +59,7 @@ const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
             socketToRoom[socket.id] = roomID;
             roomAdddrPairToSocket[roomAddrPair(roomID, payload.address)] = socket.id;
             const usersInThisRoom = users[roomID].filter((user) => {
-                payload.address !== user.userData.address
+                return payload.address !== user.userData.address
             }).map((userInfo) => {
                 return userInfo.userData;
             });
@@ -70,16 +69,14 @@ const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
         socket.on("send offer", (offer, toAddr) => {
             const roomID = socketToRoom[socket.id];
             const toUserID = roomAdddrPairToSocket[roomAddrPair(roomID, toAddr)];
-            const peerData = users[roomID].find((user) => {
-                user.userData.address === socket.data.userData.address;
-            }).userData;
-            io.to(toUserID).emit("user joined", offer, peerData);
+            io.to(toUserID).emit("user joined", offer, socket.data.userData);
         });
 
         socket.on("return answer", (answer, toAddr) => {
             const roomID = socketToRoom[socket.id];
             const toUserID = roomAdddrPairToSocket[roomAddrPair(roomID, toAddr)];
-            io.to(toUserID).emit('receiving returned answer', answer, socket.id);
+            const fromAddr = socket.data.userData.address;
+            io.to(toUserID).emit('receiving returned answer', answer, fromAddr);
         });
 
         socket.on('disconnect', () => {

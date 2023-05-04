@@ -225,7 +225,7 @@ const Room = ({ params }) => {
                 const peer = createPeer(peerData);
                 peersRef.current.push(peer);
             })
-            setPeers(peersRef.current);
+            setPeers([...peersRef.current]);
         })
         socketRef.current.on("user joined", (offer, peerData) => {
             console.log("user joined");
@@ -274,6 +274,7 @@ const Room = ({ params }) => {
     }
 
     async function initUserData() {
+        console.log("Logged in as " + signer.address);
         userData.current = {
             address: signer.address,
             nickname: displayName,
@@ -333,7 +334,7 @@ const Room = ({ params }) => {
                 return;
             }
             peersRef.current[index].remoteStream = event.streams[0];
-            setPeers(peersRef.current);
+            setPeers([...peersRef.current]);
         };
         return peer;
     }
@@ -354,7 +355,7 @@ const Room = ({ params }) => {
                 return;
             }
             peersRef.current[index].remoteStream = event.streams[0];
-            setPeers(peersRef.current);
+            setPeers([...peersRef.current]);
         };
         peer.setRemoteSDP(offer)
         .then((answer) => {
@@ -400,7 +401,7 @@ const Room = ({ params }) => {
                     <Image src={mic} alt="mic" className={`${styles.imgMic} ${styles.images}`}/>
                 </div>
                 <div className={`${styles.controlContainer} ${styles.leaveBtn}`}>
-                    <Link href="/">
+                    <Link onClick={() => socketRef.current.disconnect()} href="/">
                         <Image src={phone} alt="phone" className={`${styles.imgPhone} ${styles.images}`}/>
                     </Link>
                 </div>
