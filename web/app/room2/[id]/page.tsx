@@ -212,7 +212,7 @@ const Room = ({ params }) => {
 
     const router = useRouter();
     const { certificates } = useContext(Fingerprint);
-    const { loadedWeb3, signer, roomExists, isAdmitted, signMessage } = useContext(Blockchain);
+    const { loadedWeb3, signer, roomExists, isAdmitted } = useContext(Blockchain);
 
     function getSocket(url: string) {
         console.log("connecting to ", url);
@@ -321,7 +321,6 @@ const Room = ({ params }) => {
         }
         peer.createSDP()
         .then((offer) => {
-            signMessage(offer.sdp);
             socketRef.current.emit("send offer", { toUserID, fromUserID, offer })
         });
         peer.pc.ontrack = (event) => {
