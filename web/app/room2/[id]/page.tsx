@@ -5,7 +5,6 @@ import io, { Socket } from "socket.io-client";
 import { ClientToServerEvents, ServerToClientEvents, UserData } from '@/types/socket';
 import MyVideoComponent from "@/components/MyVideoComponent";
 import Chat from "@/components/Chat";
-import Member from "@/components/MemberComponent";
 import Stream from "@/components/Stream";
 import Members from "@/components/Members";
 // import ChatComponent from "@/components/ChatComponent";
@@ -256,7 +255,7 @@ const Room = ({ params }) => {
 
     function verifyUser() {
         if (!loadedWeb3) {
-            alert("Please connect your Meteamask Wallet");
+            alert("Please connect your Metamask Wallet");
             router.push("/");
             return;
         }
@@ -290,7 +289,7 @@ const Room = ({ params }) => {
     }
 
     useEffect(() => {
-        verifyUser();
+        //verifyUser();
         initUserData().then(() => {
             if (userStreamRef.current && !isLoadingStream) {
                 userVideoRef.current.srcObject = userStreamRef.current;
@@ -401,7 +400,7 @@ const Room = ({ params }) => {
                     <Members></Members>
                 </section>
                 <section className={`${styles.stream__container}`}>
-                    <MyVideoComponent stream={userVideoRef} peers={peers} />
+                    {/* <MyVideoComponent stream={userVideoRef} peers={peers} /> */}
 
                     {/* <div className={`${styles.controls}`}>
                         <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleCamera()})}>

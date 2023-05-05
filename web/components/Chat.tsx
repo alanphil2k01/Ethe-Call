@@ -10,7 +10,7 @@ const Chat = ({ msgs, chatInputRef, sendChatMsg }) => {
             <Message message="Convert RGB colors to HEX when styling using HTML & CSS"></Message>
             <Message message="Convert RGB colors to HEX when styling using HTML & CSS"></Message>
             {msgs.map((msg, index) => (
-                <Message message={msg}></Message>
+              <Message message={msg}></Message>
             ))}
             <form id={`${styles.message__form}`}>
                 <input type="text" name="message" placeholder="Send a message...." ref={chatInputRef} onKeyDown={(event) => {

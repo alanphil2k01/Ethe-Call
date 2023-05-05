@@ -17,7 +17,7 @@ export default function RootLayout({
         head.tsx. Find out more at https://beta.nextjs.org/docs/api-reference/file-conventions/head
       */}
       <head />
-      <body className='bg-[#1d2b3a]'>
+      <body className='bg-[#1a1a1a]'>
         <BlockchainProvider>
             <FingerprintProvider>
                 <MyNewNavbar>

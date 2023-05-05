@@ -1,5 +1,5 @@
 import styles from './Members.module.css';
-import Member from './MemberComponent';
+import Member from './Member';
 
 export default function Members(props){
     return (
@@ -10,6 +10,15 @@ export default function Members(props){
             </div>
 
             <div id={`${styles.member__list}`}>
+                <Member name="Sulammita"></Member>
+                <Member name="Dennis Ivy"></Member>
+                <Member name="Shahriar P. Shuvo 👋:"></Member>
+                <Member name="Sulammita"></Member>
+                <Member name="Dennis Ivy"></Member>
+                <Member name="Shahriar P. Shuvo 👋:"></Member>
+                <Member name="Sulammita"></Member>
+                <Member name="Dennis Ivy"></Member>
+                <Member name="Shahriar P. Shuvo 👋:"></Member>
                 <Member name="Sulammita"></Member>
                 <Member name="Dennis Ivy"></Member>
                 <Member name="Shahriar P. Shuvo 👋:"></Member>
