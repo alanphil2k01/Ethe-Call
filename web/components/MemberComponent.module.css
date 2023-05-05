@@ -1,0 +1,22 @@
+.text {
+  font-weight: 300;
+}
+.member__wrapper {
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
+    padding-left: 1em;
+  }
+  
+.green__icon {
+    display: block;
+    height: 8px;
+    width: 8px;
+    border-radius: 50%;
+    background-color: #2aca3e;
+}
+  
+.member_name{
+    font-size: 14px;
+    line-height: 0;
+}

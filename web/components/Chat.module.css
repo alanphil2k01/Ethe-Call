@@ -1,0 +1,33 @@
+#messages {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+  }
+  
+  #message__form {
+    width: 23.2rem;
+    position: fixed;
+    bottom: 0;
+    display: block;
+    background-color: #1a1a1a;
+    padding: 1em;
+  }
+  
+  #message__form input {
+    color: #fff;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    padding: 18px;
+    font-size: 14px;
+    box-sizing: border-box;
+    background-color: #3f434a;
+  }
+  
+  #message__form input:focus {
+    outline: none;
+  }
+  
+  #message__form input::placeholder {
+    color: #707575;
+  }

@@ -4,20 +4,6 @@
   font-family: 'Poppins', sans-serif;
 }
 
-.avatar__md {
-  height: 40px;
-  width: 40px;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
-.avatar__sm {
-  height: 30px;
-  width: 30px;
-  object-fit: cover;
-  border-radius: 50%;
-}
-
 #nav {
   position: fixed;
   top: 0;
@@ -104,13 +90,6 @@
   align-items: center;
 }
 
-#members__button,
-#chat__button {
-  display: none;
-  cursor: pointer;
-  background: transparent;
-  border: none;
-}
 
 #members__button:hover svg > path,
 #chat__button:hover svg,
@@ -124,10 +103,6 @@
 }
 
 @media (max-width: 640px) {
-  #members__button {
-    display: block;
-  }
-
   .nav__link svg {
     width: 1.5rem;
     height: 1.5rem;

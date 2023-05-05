@@ -25,3 +25,97 @@
 .leaveBtn{
     background-color: rgb(255, 80, 80, 1);
 }
+
+
+.container {
+    margin-top: 74px;
+    height: clac(100vh - 74px);
+    width: 100%;
+    position: relative;
+  }
+  
+  .members__container {
+    background-color: #262625;
+    border-right: 1px solid #797a79;
+    overflow-y: auto;
+    width: 90%;
+    max-width: 250px;
+    position: fixed;
+    height: 100%;
+    z-index: 999;
+  }
+
+  .room__container {
+    position: relative;
+    display: flex;
+    gap: 3rem;
+  }
+  
+  .messages__container {
+    height: calc(100vh - 85px);
+    background-color: #262625;
+    right: 0;
+    position: absolute;
+    width: 100%;
+    max-width: 25rem;
+    overflow-y: auto;
+    border-left: 1px solid #111;
+  }
+  
+  
+  @media (max-width: 1200px) {
+    #members__container {
+      display: none;
+    }
+  
+    #members__button {
+      display: block;
+    }
+  
+    #stream__container {
+      width: calc(100% - 25rem);
+      left: 0;
+    }
+  }
+  
+  @media (max-width: 980px) {
+    #stream__container {
+      width: calc(100% - 20rem);
+      left: 0;
+    }
+    #messages__container {
+      max-width: 20rem;
+    }
+  
+    #message__form {
+      width: 18.2rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    #stream__container {
+      width: 100%;
+    }
+  
+    #messages__container {
+      display: none;
+    }
+  
+    #chat__button {
+      display: block;
+    }
+  }
+  
+  #stream__box {
+    position: relative;
+  }
+  
+  .stream__focus {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .stream__focus iframe {
+    width: 100%;
+    height: 100%;
+  }

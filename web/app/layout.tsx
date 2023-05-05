@@ -2,6 +2,7 @@ import './globals.css'
 import  { BlockchainProvider } from "./blockchain";
 import Navbar from '@/components/navbar';
 import { FingerprintProvider } from './fingerprint';
+import MyNewNavbar from '@/components/myNewNavbar';
 
 
 export default function RootLayout({
@@ -19,8 +20,8 @@ export default function RootLayout({
       <body>
         <BlockchainProvider>
             <FingerprintProvider>
-                <Navbar>
-                </Navbar>
+                <MyNewNavbar>
+                </MyNewNavbar>
                 { children }
             </FingerprintProvider>
         </BlockchainProvider>

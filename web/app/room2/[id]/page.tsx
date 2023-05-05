@@ -4,7 +4,10 @@ import { ChangeEventHandler, useContext, useEffect, useRef, useState } from "rea
 import io, { Socket } from "socket.io-client";
 import { ClientToServerEvents, ServerToClientEvents } from '@/types/socket';
 import MyVideoComponent from "@/components/MyVideoComponent";
-import ChatComponent from "@/components/ChatComponent";
+import Chat from "@/components/Chat";
+import Member from "@/components/MemberComponent";
+import Stream from "@/components/Stream";
+import Members from "@/components/Members";
 import { Blockchain } from "@/app/blockchain";
 import { Fingerprint }  from "@/app/fingerprint";
 import { useRouter } from "next/navigation";
@@ -378,41 +381,50 @@ const Room = ({ params }) => {
         })
         chatInputRef.current.value = "";
         setChatMsgs(prevChats => [...prevChats, `you sent ${val}`]);
-}
+    }
 
     return (
-        <div>
-            <div className="h-5 bg-white"></div>
-            {/*
-            <button onClick={() => {
-                peersRef.current.forEach(peer => {
-                    console.log("Connecttion State: ", peer.peer.pc.connectionState);
-                    console.log("Ice Connection State: ", peer.peer.pc.iceConnectionState);
-                    console.log("Signalling State: ", peer.peer.pc.signalingState);
-                    console.log("Can Trickle: ", peer.peer.pc.canTrickleIceCandidates);
-                })
-            }} >Check Status</button>
-        */}
+        <main className={`${styles.container}`}>
+            <div className={`${styles.room__container}`}>
+                    {/*
+                    <button onClick={() => {
+                        peersRef.current.forEach(peer => {
+                            console.log("Connecttion State: ", peer.peer.pc.connectionState);
+                            console.log("Ice Connection State: ", peer.peer.pc.iceConnectionState);
+                            console.log("Signalling State: ", peer.peer.pc.signalingState);
+                            console.log("Can Trickle: ", peer.peer.pc.canTrickleIceCandidates);
+                        })
+                    }} >Check Status</button>
+                */}
+                <section className={`${styles.members__container}`}>
+                    <Members></Members>
+                </section>
+                <section className={`${styles.stream__container}`}>
+                    <MyVideoComponent stream={userVideoRef} peers={peers} />
 
-            <MyVideoComponent stream={userVideoRef} peers={peers} />
-            <div className={`${styles.controls}`}>
-                <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleCamera()})}>
-                    <Image src={camera} alt="camera" className={`${styles.imgCamera} ${styles.images}`}/>
-                </div>
-                <div className={`${styles.controlContainer} ${styles.micBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleMic()})}>
-                    <Image src={mic} alt="mic" className={`${styles.imgMic} ${styles.images}`}/>
-                </div>
-                <div className={`${styles.controlContainer} ${styles.leaveBtn}`}>
-                    <Link href="/">
-                        <Image src={phone} alt="phone" className={`${styles.imgPhone} ${styles.images}`}/>
-                    </Link>
-                </div>
+                    {/* <div className={`${styles.controls}`}>
+                        <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleCamera()})}>
+                            <Image src={camera} alt="camera" className={`${styles.imgCamera} ${styles.images}`}/>
+                        </div>
+                        <div className={`${styles.controlContainer} ${styles.micBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleMic()})}>
+                            <Image src={mic} alt="mic" className={`${styles.imgMic} ${styles.images}`}/>
+                        </div>
+                        <div className={`${styles.controlContainer} ${styles.leaveBtn}`}>
+                            <Link href="/">
+                                <Image src={phone} alt="phone" className={`${styles.imgPhone} ${styles.images}`}/>
+                            </Link>
+                        </div>
+                    </div> */}
+                    <Stream></Stream>
+                    {/* <DeviceList deviceList={audioInList.current} onChange={(e) => {setAudioIn(e.target.value)}} />
+                    <DeviceList deviceList={audioOutList.current} />
+                    <DeviceList deviceList={cameraList.current} onChange={(e) => {setCamera(e.target.value)}} /> */}
+                </section>
+                <section className={`${styles.messages__container}`}>
+                    <Chat msgs={chatMsgs} chatInputRef={chatInputRef} sendChatMsg={sendChatMsg} />
+                </section>
             </div>
-            <DeviceList deviceList={audioInList.current} onChange={(e) => {setAudioIn(e.target.value)}} />
-            <DeviceList deviceList={audioOutList.current} />
-            <DeviceList deviceList={cameraList.current} onChange={(e) => {setCamera(e.target.value)}} />
-            <ChatComponent msgs={chatMsgs} chatInputRef={chatInputRef} sendChatMsg={sendChatMsg} />
-        </div>
+        </main>
     );
 };
 
