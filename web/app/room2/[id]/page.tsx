@@ -199,6 +199,8 @@ const Room = ({ params }) => {
     const userData = useRef<UserData>(null);
     const [chatMsgs, setChatMsgs] = useState<string[]>([]);
     const chatInputRef = useRef<HTMLInputElement>()
+    const [camEnabled, setCamEnabled] = useState(true);
+    const [micEnabled, setMicEnabled] = useState(true);
 
     const {
         isLoadingStream,
@@ -380,7 +382,7 @@ const Room = ({ params }) => {
 
     return (
         <div>
-            <div className="h-5 bg-white"></div>
+            <div className="h-5"></div>
             {/*
             <button onClick={() => {
                 peersRef.current.forEach(peer => {
@@ -394,10 +396,18 @@ const Room = ({ params }) => {
 
             <MyVideoComponent stream={userVideoRef} peers={peers} />
             <div className={`${styles.controls}`}>
-                <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleCamera()})}>
+                <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={() => {
+                    // peers.forEach((peer)=>{peer.toggleCamera()})
+                    userStreamRef.current.getTracks().find(track => track.kind === "video").enabled = !camEnabled;
+                    setCamEnabled(!camEnabled);
+                }}>
                     <Image src={camera} alt="camera" className={`${styles.imgCamera} ${styles.images}`}/>
                 </div>
-                <div className={`${styles.controlContainer} ${styles.micBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleMic()})}>
+                <div className={`${styles.controlContainer} ${styles.micBtn}`} onClick={() => {
+                    // peers.forEach((peer)=>{peer.toggleMic()})
+                    userStreamRef.current.getTracks().find(track => track.kind === "audio").enabled = !micEnabled;
+                    setMicEnabled(!micEnabled);
+                }}>
                     <Image src={mic} alt="mic" className={`${styles.imgMic} ${styles.images}`}/>
                 </div>
                 <div className={`${styles.controlContainer} ${styles.leaveBtn}`}>

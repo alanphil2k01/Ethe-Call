@@ -9,6 +9,45 @@
     gap: 50px;
 }
 
+.btn1 {
+    height: 50px;
+    width : 150px;
+    border: none;
+    color: #42FBF2;
+    border-radius: 4px;
+    transition: ease-out 0.3s;
+    /*font-size: ;*/
+    outline: none;
+    border: 3px solid #42FBF2;
+    position: relative;
+    z-index: 1;
+}
+
+.btn1:hover {
+  color: #1d2b3a;
+  cursor: pointer;
+}
+
+.btn1:before{
+  transition: 0.5s all ease;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  right: 50%;
+  bottom: 0;
+  opacity: 0;
+  content: "";
+  background-color: #42FBF2;
+}
+
+.btn1:hover:before {
+  transition: 0.5s all ease;
+  left: 0;
+  right: 0;
+  opacity: 1;
+  z-index: -1;
+}
+
 .div1 {
     background-color: #1d2b3a;
     width: 400px;
@@ -37,7 +76,6 @@
     background-color: #1d2b3a;
     width: 350px;
     height: 30px;
-    margin-top: 100px;
     margin-bottom: auto;
     margin-right: auto;
     margin-left: 10px;
