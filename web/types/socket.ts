@@ -1,21 +1,28 @@
+export interface UserData {
+    address: string;
+    message: string;
+    sign: string;
+    nickname: string;
+}
+
 export interface ServerToClientEvents {
     "room full": () => void;
-    "all users": (usersList: { socketID: string, addr: string }[]) => void;
-    "user joined": (joinedPayload: {offer: RTCSessionDescription, fromUserID: string}) => void;
-    "receiving returned answer": (answerReturnPayload: { returnID: string, answer: RTCSessionDescription }) => void;
-    "ice candidate": (candidatePayload: { candidate: RTCIceCandidate, fromID: string }) => void;
+    "all users": (usersList: UserData[]) => void;
+    "user joined": (offer: RTCSessionDescription, peerData: UserData) => void;
+    "receiving returned answer": (answer: RTCSessionDescription, returnAddr: string) => void;
+    "ice candidate": (candidate: RTCIceCandidate, fromAddr: string) => void;
 }
 
 export interface ClientToServerEvents {
-    "join room": (joinPayload: { roomID: string, addr: string }) => void;
-    "send offer": (offerPayload: { toUserID: string, offer: RTCSessionDescription, fromUserID: string }) => void;
-    "return answer": (answerPayload: { callerID: string, answer: RTCSessionDescription }) => void;
-    "ice candidate": (candidatePayload: { candidate: RTCIceCandidate, roomID: string, fromID: string }) => void;
+    "join room": ( roomID: string, payload: UserData ) => void;
+    "send offer": (offer: RTCSessionDescription, toAddr: string) => void;
+    "return answer": (answer: RTCSessionDescription, toAddr: string) => void;
+    "ice candidate": (candidate: RTCIceCandidate) => void;
 }
 
 export interface InterServerEvents {
 }
 
 export interface SocketData {
-    addr: string
+    userData: UserData
 }

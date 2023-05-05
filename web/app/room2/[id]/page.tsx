@@ -1,14 +1,15 @@
-'use client';
+"use client";
 
 import { ChangeEventHandler, useContext, useEffect, useRef, useState } from "react";
 import io, { Socket } from "socket.io-client";
-import { ClientToServerEvents, ServerToClientEvents } from '@/types/socket';
+import { ClientToServerEvents, ServerToClientEvents, UserData } from '@/types/socket';
 import MyVideoComponent from "@/components/MyVideoComponent";
 import Chat from "@/components/Chat";
 import Member from "@/components/MemberComponent";
 import Stream from "@/components/Stream";
 import Members from "@/components/Members";
-import { Blockchain } from "@/app/blockchain";
+// import ChatComponent from "@/components/ChatComponent";
+import { Blockchain, verifySign } from "@/app/blockchain";
 import { Fingerprint }  from "@/app/fingerprint";
 import { useRouter } from "next/navigation";
 import { Peer } from "@/app/peer";
@@ -195,13 +196,15 @@ function DeviceList({ deviceList, onChange}: { deviceList: DeviceInfo[], onChang
 const Room = ({ params }) => {
     const [peers, setPeers] = useState<Peer[]>([]);
     const userVideoRef = useRef<HTMLVideoElement>();
-    const peersRef = useRef<{ peerSocketID: string, peer: Peer }[]>([]);
+    const peersRef = useRef<Peer[]>([]);
     const { id: roomID } = params;
     const socketCreated = useRef(false)
     const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents>>();
-    const addr = useRef<string>((Math.random() + 1).toString(36).substring(5));
+    const userData = useRef<UserData>(null);
     const [chatMsgs, setChatMsgs] = useState<string[]>([]);
     const chatInputRef = useRef<HTMLInputElement>()
+    const [camEnabled, setCamEnabled] = useState(true);
+    const [micEnabled, setMicEnabled] = useState(true);
 
     const {
         isLoadingStream,
@@ -215,46 +218,37 @@ const Room = ({ params }) => {
 
     const router = useRouter();
     const { certificates } = useContext(Fingerprint);
-    const { loadedWeb3, signer, roomExists, isAdmitted } = useContext(Blockchain);
+    const { loadedWeb3, signer, message, sign, displayName, roomExists, isAdmitted } = useContext(Blockchain);
 
     function getSocket(url: string) {
-        console.log("connecting to ", url);
         socketRef.current = io(url)
         socketCreated.current = true
         console.log("Joining Room");
-        socketRef.current.emit("join room", { roomID, addr: addr.current });
+        socketRef.current.emit("join room", roomID, userData.current);
         socketRef.current.on("all users", (users) => {
             console.log("Received all users: ", users);
-            const peers = [];
-            users.forEach(user => {
-                const peer = createPeer(user.socketID, socketRef.current.id);
-                peersRef.current.push({
-                    peerSocketID: user.socketID,
-                    peer,
-                })
-                peers.push(peer);
+            users.forEach((peerData) => {
+                const peer = createPeer(peerData);
+                peersRef.current.push(peer);
             })
-            setPeers(peers);
+            setPeers([...peersRef.current]);
         })
-        socketRef.current.on("user joined", ({ offer, fromUserID, }) => {
+        socketRef.current.on("user joined", (offer, peerData) => {
             console.log("user joined");
-            const peer = addPeer(offer, fromUserID, userStreamRef.current);
+            const peer = addPeer(offer, peerData, userStreamRef.current);
 
-            peersRef.current.push({
-                peerSocketID: fromUserID,
-                peer,
-            })
+            peersRef.current.push(peer)
 
             setPeers(users => [...users, peer]);
         });
-        socketRef.current.on("receiving returned answer", ({ returnID, answer }) => {
-            const p = peersRef.current.find(p => p.peerSocketID === returnID);
+        socketRef.current.on("receiving returned answer", (answer, returnAddr) => {
+            const peer = peersRef.current.find((peer) => peer.peerData.address === returnAddr);
             console.log("Receiving returned answer");
-            p.peer.setRemoteSDP(answer);
+            peer.setRemoteSDP(answer);
         });
-        socketRef.current.on("ice candidate", ({ candidate, fromID }) => {
-            const peer = peersRef.current.find(peer => peer.peerSocketID === fromID);
-            peer.peer.pc
+        socketRef.current.on("ice candidate", (candidate, fromAddr) => {
+            const peer = peersRef.current.find((peer) => peer.peerData.address === fromAddr);
+            peer.pc
                 .addIceCandidate(new RTCIceCandidate(candidate))
                 .catch((e) => console.log(e));
         });
@@ -285,87 +279,94 @@ const Room = ({ params }) => {
         }
     }
 
+    async function initUserData() {
+        console.log("Logged in as " + signer.address);
+        userData.current = {
+            address: signer.address,
+            nickname: displayName,
+            message: message,
+            sign: sign,
+        }
+    }
+
     useEffect(() => {
-        // verifyUser();
-        if (userStreamRef.current && !isLoadingStream) {
-            userVideoRef.current.srcObject = userStreamRef.current;
-            userVideoRef.current.onloadedmetadata = () => {
-                userVideoRef.current.play();
-            };
-        }
-        if (!userStreamRef.current || socketCreated.current) {
-            return;
-        }
-        fetch("/api/socket2")
-        .then(() => {
-                // getSocket(process.env.WEBSOCKET_URL || '/api/socket');
-                getSocket("");
+        verifyUser();
+        initUserData().then(() => {
+            if (userStreamRef.current && !isLoadingStream) {
+                userVideoRef.current.srcObject = userStreamRef.current;
+                userVideoRef.current.onloadedmetadata = () => {
+                    userVideoRef.current.play();
+                };
+            }
+            if (!userStreamRef.current || socketCreated.current) {
+                return;
+            }
+            fetch("/api/socket2")
+            .then(() => {
+                    getSocket("");
+            });
         });
 
-    }, [isLoadingStream]);0x3B87223646ACc9A148BA437f21b5ce4c9A35F79a
+    }, [isLoadingStream]);
+
+    function iceHandler(event: RTCPeerConnectionIceEvent) {
+        if (event.candidate) {
+            socketRef.current.emit("ice candidate", event.candidate);
+        }
+    }
 
     function dcMessageHandler(event: MessageEvent) {
         const msg = event.data;
         setChatMsgs(prevChats => [...prevChats, msg]);
     }
 
-    function createPeer(toUserID: string, fromUserID: string) {
+    function createPeer(peerData: UserData) {
         const peer = new Peer({
-            addr: socketRef.current.id,
             stream: userStreamRef.current,
             initiator: true,
-            certificates: certificates,
-            dcMessageHandler: dcMessageHandler
+            certificates,
+            peerData,
+            iceHandler,
+            dcMessageHandler,
         });
-        peer.pc.onicecandidate = (event) => {
-            if (event.candidate) {
-                socketRef.current.emit("ice candidate", { candidate: event.candidate, roomID, fromID: socketRef.current.id });
-            }
-        }
         peer.createSDP()
         .then((offer) => {
-            socketRef.current.emit("send offer", { toUserID, fromUserID, offer })
+            socketRef.current.emit("send offer", offer, peerData.address)
         });
         peer.pc.ontrack = (event) => {
             console.log("Got Tracks: ", event.streams[0].getTracks());
-            const index = peersRef.current.findIndex(p => p.peer === peer)
+            const index = peersRef.current.findIndex(p => p === peer)
             if (index === -1) {
                 return;
             }
-            peersRef.current[index].peer.remoteStream = event.streams[0];
-            const peers = peersRef.current.map((x) => x.peer);
-            setPeers(peers);
+            peersRef.current[index].remoteStream = event.streams[0];
+            setPeers([...peersRef.current]);
         };
         return peer;
     }
 
-    function addPeer(offer: RTCSessionDescription, callerID: string, stream: MediaStream): Peer {
+    function addPeer(offer: RTCSessionDescription, peerData: UserData, stream: MediaStream): Peer {
         const peer = new Peer({
             initiator: false,
-            addr: callerID,
             stream,
-            certificates: certificates,
-            dcMessageHandler: dcMessageHandler
+            certificates,
+            iceHandler,
+            dcMessageHandler,
+            peerData,
         })
-        peer.pc.onicecandidate = (event) => {
-            if (event.candidate) {
-                socketRef.current.emit("ice candidate", { candidate: event.candidate, roomID, fromID: socketRef.current.id });
-            }
-        }
         peer.pc.ontrack = (event) => {
             console.log("Got Tracks: ", event.streams[0].getTracks());
-            const index = peersRef.current.findIndex(p => p.peer === peer)
+            const index = peersRef.current.findIndex(p => p === peer)
             if (index === -1) {
                 return;
             }
-            peersRef.current[index].peer.remoteStream = event.streams[0];
-            const peers = peersRef.current.map((x) => x.peer);
-            setPeers(peers);
+            peersRef.current[index].remoteStream = event.streams[0];
+            setPeers([...peersRef.current]);
         };
         peer.setRemoteSDP(offer)
         .then((answer) => {
-                console.log("returning answer");
-                socketRef.current.emit("return answer", { answer, callerID })
+            console.log("returning answer");
+            socketRef.current.emit("return answer", answer, peerData.address)
         })
         return peer;
     }
@@ -423,7 +424,42 @@ const Room = ({ params }) => {
                 <section className={`${styles.messages__container}`}>
                     <Chat msgs={chatMsgs} chatInputRef={chatInputRef} sendChatMsg={sendChatMsg} />
                 </section>
-            </div>
+        {/* <div>
+            <div className="h-5"></div>
+            {/*
+            <button onClick={() => {
+                peersRef.current.forEach(peer => {
+                    console.log("Connecttion State: ", peer.peer.pc.connectionState);
+                    console.log("Ice Connection State: ", peer.peer.pc.iceConnectionState);
+                    console.log("Signalling State: ", peer.peer.pc.signalingState);
+                    console.log("Can Trickle: ", peer.peer.pc.canTrickleIceCandidates);
+                })
+            }} >Check Status</button>
+        */}
+        {/*
+            <MyVideoComponent stream={userVideoRef} peers={peers} />
+            <div className={`${styles.controls}`}>
+                <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={() => {
+                    // peers.forEach((peer)=>{peer.toggleCamera()})
+                    userStreamRef.current.getTracks().find(track => track.kind === "video").enabled = !camEnabled;
+                    setCamEnabled(!camEnabled);
+                }}>
+                    <Image src={camera} alt="camera" className={`${styles.imgCamera} ${styles.images}`}/>
+                </div>
+                <div className={`${styles.controlContainer} ${styles.micBtn}`} onClick={() => {
+                    // peers.forEach((peer)=>{peer.toggleMic()})
+                    userStreamRef.current.getTracks().find(track => track.kind === "audio").enabled = !micEnabled;
+                    setMicEnabled(!micEnabled);
+                }}>
+                    <Image src={mic} alt="mic" className={`${styles.imgMic} ${styles.images}`}/>
+                </div>
+                <div className={`${styles.controlContainer} ${styles.leaveBtn}`}>
+                    <Link onClick={() => socketRef.current.disconnect()} href="/">
+                        <Image src={phone} alt="phone" className={`${styles.imgPhone} ${styles.images}`}/>
+                    </Link>
+                </div>
+            </div> */}
+        </div>
         </main>
     );
 };

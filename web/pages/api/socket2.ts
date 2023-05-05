@@ -2,7 +2,7 @@ import type { Server as HTTPServer } from 'http'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import type { Socket as NetSocket } from 'net'
 import { Server as IOServer } from 'socket.io'
-import { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData } from '@/types/socket';
+import { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData, UserData } from '@/types/socket';
 
 interface SocketServer extends HTTPServer {
   io?: IOServer | undefined
@@ -16,9 +16,12 @@ interface NextApiResponseWithSocket extends NextApiResponse {
   socket: SocketWithIO
 }
 
-const users: { [key: string]: { socketID: string, addr: string }[] }= {};
-
-const socketToRoom: { [key: string]: string } = {};
+function roomAddrPair(roomID: string, addr: string): string {
+    return `${roomID}:${addr}`;
+}
+const users: { [roomID: string]: { socketID: string, userData: UserData }[] }= {};
+const socketToRoom: { [socketID: string]: string } = {};
+const roomAdddrPairToSocket: { [key: string]: string } = {};
 
 const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
     if (res.socket.server.io) {
@@ -30,45 +33,50 @@ const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
     res.socket.server.io = io;
 
     io.on('connection', (socket) => {
-        socket.on("join room", ({ roomID, addr }) => {
-            socket.data.addr = addr;
-
+        socket.on("join room", (roomID, payload) => {
+            socket.data.userData = payload;
             if (users[roomID]) {
-                const length = users[roomID].length;
-                if (length === 5) {
+                const count = users[roomID].length;
+                if (count === 10) {
                     socket.emit("room full");
                     return;
                 }
                 let f = 0;
                 for (let i = 0; i < users[roomID].length; i++) {
                     const user = users[roomID][i];
-                    if (user.addr === addr) {
+                    if (user.userData.address === payload.address) {
                         user.socketID = socket.id;
                         f = 1;
                         break;
                     }
                 }
                 if (f === 0) {
-                    users[roomID].push({ socketID: socket.id, addr });
-                } } else {
-                    users[roomID] = [{ socketID: socket.id, addr }];
+                    users[roomID].push({ socketID: socket.id, userData: payload });
                 }
+            } else {
+                users[roomID] = [{ socketID: socket.id, userData: payload }];
+            }
             socketToRoom[socket.id] = roomID;
-            console.log("all users in room: ", users[roomID]);
-
-            const usersInThisRoom = users[roomID].filter((user) => addr !== user.addr);
-
-            console.log("users in room: ", usersInThisRoom);
-
+            roomAdddrPairToSocket[roomAddrPair(roomID, payload.address)] = socket.id;
+            const usersInThisRoom = users[roomID].filter((user) => {
+                return payload.address !== user.userData.address
+            }).map((userInfo) => {
+                return userInfo.userData;
+            });
             socket.emit("all users", usersInThisRoom);
         });
 
-        socket.on("send offer", ({ toUserID, offer, fromUserID }) => {
-            io.to(toUserID).emit("user joined", { offer, fromUserID });
+        socket.on("send offer", (offer, toAddr) => {
+            const roomID = socketToRoom[socket.id];
+            const toUserID = roomAdddrPairToSocket[roomAddrPair(roomID, toAddr)];
+            io.to(toUserID).emit("user joined", offer, socket.data.userData);
         });
 
-        socket.on("return answer", ({ answer, callerID }) => {
-            io.to(callerID).emit('receiving returned answer', { answer, returnID: socket.id });
+        socket.on("return answer", (answer, toAddr) => {
+            const roomID = socketToRoom[socket.id];
+            const toUserID = roomAdddrPairToSocket[roomAddrPair(roomID, toAddr)];
+            const fromAddr = socket.data.userData.address;
+            io.to(toUserID).emit('receiving returned answer', answer, fromAddr);
         });
 
         socket.on('disconnect', () => {
@@ -80,10 +88,13 @@ const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
             }
         });
 
-        socket.on("ice candidate", ({ candidate, roomID, fromID }) => {
+        socket.on("ice candidate", (candidate) => {
+            const roomID = socketToRoom[socket.id];
+            const fromAddr = socket.data.userData.address;
+            const fromID = roomAdddrPairToSocket[roomAddrPair(roomID, fromAddr)];
             users[roomID].forEach(user => {
                 if (fromID !== user.socketID) {
-                    socket.to(user.socketID).emit("ice candidate", { candidate, fromID });
+                    socket.to(user.socketID).emit("ice candidate", candidate, fromAddr);
                 }
             });
         });

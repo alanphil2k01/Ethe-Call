@@ -1,8 +1,11 @@
+import { UserData } from "@/types/socket";
+
 export type Options = {
-    certificates?: RTCCertificate[];
-    stream?: MediaStream;
     initiator?: boolean;
-    addr: string,
+    certificates: RTCCertificate[];
+    stream: MediaStream;
+    peerData: UserData;
+    iceHandler: (event: RTCPeerConnectionIceEvent) => void;
     dcMessageHandler: (event: MessageEvent) => void;
 }
 
@@ -21,12 +24,13 @@ export class Peer {
     initiator?: boolean;
     dcReady: boolean = false;
     remoteStream: MediaStream;
+    peerData: UserData;
 
     constructor(opts: Options) {
-        this.addr = opts.addr;
         this.certificates = opts.certificates;
         this.userStream = opts.stream;
         this.initiator = opts.initiator || false;
+        this.peerData = opts.peerData || null;
 
         this.pc = new RTCPeerConnection({
             iceServers: ICE_SERVERS,
@@ -52,6 +56,7 @@ export class Peer {
                 }
             }
         }
+        this.pc.onicecandidate = opts.iceHandler;
     }
 
     addTracks() {
@@ -73,7 +78,7 @@ export class Peer {
             //style the button
         }
     }
-    
+
     async toggleMic(){
         let audioTrack = this.userStream.getTracks().find(track => track.kind === 'audio')
 
@@ -85,14 +90,23 @@ export class Peer {
             //style the button
         }
     }
-    
+
     async createSDP(): Promise<RTCSessionDescription> {
         if (!this.initiator) {
             return;
         }
         this.addTracks();
-
         const offer = await this.pc.createOffer();
+        await this.pc.setLocalDescription(offer);
+        return this.pc.localDescription;
+
+    }
+
+    async createSDPWithOffer(offer: RTCSessionDescription): Promise<RTCSessionDescription> {
+        if (!this.initiator) {
+            return;
+        }
+        this.addTracks();
         await this.pc.setLocalDescription(offer);
         return this.pc.localDescription;
 
@@ -100,11 +114,9 @@ export class Peer {
 
     async setRemoteSDP(sdp: RTCSessionDescription): Promise<RTCSessionDescription | null> {
         this.pc.setRemoteDescription(sdp);
-
         if (this.initiator) {
             return;
         }
-
         this.addTracks();
         let answer: RTCSessionDescription;
         await this.pc.createAnswer()
@@ -112,6 +124,16 @@ export class Peer {
             answer = new RTCSessionDescription(answerSDP);
             this.pc.setLocalDescription(answer);
         })
+        return answer;
+    }
+
+    async setRemoteSDPWithAnswer(sdp: RTCSessionDescription, answer: RTCSessionDescription): Promise<RTCSessionDescription | null> {
+        await this.pc.setRemoteDescription(sdp);
+        if (this.initiator) {
+            return;
+        }
+        this.addTracks();
+        await this.pc.setLocalDescription(answer);
         return answer;
     }
 }

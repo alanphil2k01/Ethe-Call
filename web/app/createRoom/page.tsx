@@ -7,33 +7,25 @@ import { useContext } from 'react';
 import { ZeroAddress, isAddress } from 'ethers';
 import { useRouter } from 'next/navigation';
 
-type UserInput = {
-    user: string;
-    admin: boolean;
-}
-
 export default function users() {
     const router = useRouter();
     const [selectedNumber, setSelectedNumber] = useState(1);
-    const [callId, setCallId] = useState<string>("");
-    const users = useRef<UserInput[]>(Array(100).fill({ user: "", admin: false }));
+    const [roomID, setRoomId] = useState<string>("");
+    const users = useRef<string[]>(new Array(100).fill(""));
+    const isAdmin = useRef<Boolean[]>(new Array(100).fill(false));
     const { loadedWeb3, newCallWithUsers, nicknameToAddress, getHost } = useContext(Blockchain);
 
     const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
         setSelectedNumber(Number(event.target.value));
     };
 
-    function changeuser(i: number, new_val: string) {
-        users.current[i].user = new_val;
-    }
-
     const createTextFields = () => {
         const textFields = [];
         for (let i = 0; i < selectedNumber; i++) {
             textFields.push(
             <div className="div1" key={i}>
-                <label className="label1" htmlFor={`text-${i}`}>User nickname {i+1}:</label>
-                <input value={users[i]} onChange={(event: ChangeEvent<HTMLInputElement>) => changeuser(i, event.target.value)} className="input1" type="text" />
+                <label className="label1" htmlFor={`text-${i}`}>User {i+1}: </label>
+                <input value={users[i]} placeholder="nickname or address" onChange={(event) => users.current[i] = event.target.value} className="input1 placeholder-gray-500 placeholder-opacity-80" type="text" />
             </div>
       );
     }
@@ -49,65 +41,62 @@ export default function users() {
         );
     }
 
-    async function createRoom(call_id: string) {
+    async function createRoom() {
         if (!loadedWeb3) {
             alert("Please connect your Meteamask Wallet");
             return;
         }
-        if (call_id === "") {
+        if (roomID === "") {
             alert("Please enter a call ID");
             return;
         }
 
-        const nameList = users.current.slice(0, selectedNumber);
-
-        const userList = (await Promise.all(nameList.map(async (name) => {
-            if (!isAddress(name.user)) {
-                const addr = await nicknameToAddress(name.user);
-                if (!name.admin && addr !== ZeroAddress) {
-                    console.log(`Address of ${name.user} is ${addr}`);
-                    return addr;
+        let userList: string[] = []
+        let adminList: string[] = []
+        for (let i = 0; i < selectedNumber; i++) {
+            let addr: string;
+            if (isAddress(users.current[i])) {
+                addr = users.current[i];
+            } else {
+                addr = await nicknameToAddress(users.current[i]);
+            }
+            if (addr !== ZeroAddress) {
+                console.log(`Address of ${users.current[i]} is ${addr}`);
+                if (isAdmin.current[i]) {
+                    adminList.push(addr);
+                } else {
+                    userList.push(addr);
                 }
             } else {
-                return name.user;
+                alert(`${users.current[i]} does not exist`);
+                return;
             }
-        }))).filter((user) => user);
+        }
 
-        const adminList = (await Promise.all(nameList.map(async (name) => {
-            if (!isAddress(name.user)) {
-                const addr = await nicknameToAddress(name.user);
-                if (name.admin && addr !== ZeroAddress) {
-                    console.log(`Address of ${name.user} is ${addr}`);
-                    return addr;
-                }
-            } else {
-                return name.user;
-            }
-        }))).filter((user) => user);
-
-        if ((await newCallWithUsers(call_id, userList, adminList))) {
-                router.push(`/room2/${call_id}`);
+        console.log(userList);
+        console.log(adminList);
+        if ((await newCallWithUsers(roomID, userList, adminList))) {
+                router.push(`/room2/${roomID}`);
         }
 
     }
 
-    function test() {
-        getHost(callId).then((host) => console.log(host));
-    }
-
   return (
     <div className="main">
-        <div className="div2">
-            <label className="label2" htmlFor="number">Select number of users in the call :</label>
+        <div className="flex flex-row mt-4 items-center w-full justify-around">
+            <div className="">
+                <label className="label1">Room ID: </label>
+                <input placeholder="Room ID" required className="input1 placeholder-gray-500 placeholder-opacity-80" type="text" onChange={(event) => setRoomId(event.target.value)} />
+            </div>
+            <button className="btn1" onClick={createRoom}>Createe Room</button>
+        </div>
+        <div className="div2 pb-4">
+            <label className="label2" htmlFor="number">Select number of users in the call: </label>
             <select className="select" id="number" value={selectedNumber} onChange={handleChange}>
                 {options}
             </select>
             {createTextFields()}
         </div>
-        <label className="label1">Call ID</label>
-        <input required type="text" onChange={(event) => setCallId(event.target.value)} />
-    <button onClick={() => createRoom(callId)}>Createe Room</button>
-    <button onClick={test}>test</button>
     </div>
   );
 
