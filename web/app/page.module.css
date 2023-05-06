@@ -242,7 +242,7 @@
 }
 
 #avatar__selection {
-  margin-reight: 10px;
+  /*margin-height: 10px;*/
   display: flex;
   gap: 1em;
 }
