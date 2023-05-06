@@ -25,8 +25,6 @@ export default function Profile() {
     async function generate() {
         const cert = await generateNewCertificate();
         const fingerprint = (cert.getFingerprints())[0].value;
-        console.log(fingerprint);
-        console.log(fingerprint.length);
         await setFingerprint(fingerprint);
     }
 

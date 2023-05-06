@@ -1,12 +1,10 @@
 "use client";
 
-import { ReactNode, createContext, useState } from "react";
+import { ReactNode, createContext, useEffect, useState } from "react";
 
 type FingerprintVals = {
     certificates: RTCCertificate[];
     generateNewCertificate: () => Promise<RTCCertificate>;
-    setCertificate: (cert: RTCCertificate) => void;
-    getCertificate: () => string;
     getUserFingerprint: () => string;
 }
 
@@ -26,18 +24,10 @@ export function FingerprintProvider({ children }: { children: ReactNode }) {
         hash: "SHA-256",
     };
 
-    async function generateNewCertificate()  {
+    async function generateNewCertificate(): Promise<RTCCertificate> {
         const cert  = await RTCPeerConnection.generateCertificate(config)
         setCertificates([cert]);
         return cert;
-    }
-
-    function setCertificate(cert: RTCCertificate) {
-        setCertificates([cert]);
-    }
-
-    function getCertificate(): string {
-        return JSON.stringify(certificates);
     }
 
     function getUserFingerprint(): string {
@@ -48,8 +38,6 @@ export function FingerprintProvider({ children }: { children: ReactNode }) {
         <Fingerprint.Provider value={{
             certificates,
             generateNewCertificate,
-            setCertificate,
-            getCertificate,
             getUserFingerprint,
         }}>
             { children }
