@@ -2,7 +2,7 @@
 
 import Head from 'next/head'
 import { useRouter } from 'next/navigation'
-import { useState, useContext, useRef } from 'react'
+import { useState, useContext, useRef, FormEvent } from 'react'
 import { Blockchain } from './blockchain';
 import styles from './page.module.css';
 import { Fingerprint } from "./fingerprint";
@@ -48,7 +48,7 @@ export default function Home() {
         const cert = await generateNewCertificate();
         const fingerprint = (cert.getFingerprints())[0].value;
         await setFingerprint(fingerprint);
-        await setGeneratedCertificate(true);
+        setGeneratedCertificate(true);
     }
 
     async function set() {
@@ -74,10 +74,10 @@ export default function Home() {
                 <div id={`${styles.form__container__header}`}>
                     <p className={`${styles.text}`}>👋 Generate Certificate and Set Username</p>
                 </div>
- 
-                <form id={`${styles.lobby__form}`}>
+
+                <form id={`${styles.lobby__form}`} onSubmit={(event) => {event.preventDefault()}}>
                   <div className={`${styles.form__field__wrapper}`}>
-                    <button onClick={generate}>Generate Certificate 
+                    <button onClick={generate}>Generate Certificate
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
                     </button>
                   </div>
@@ -115,9 +115,9 @@ export default function Home() {
               <div id={`${styles.form__container__header}`}>
                   <p className={`${styles.text}`}>👋 Create or Join Room</p>
               </div>
- 
- 
-              <form id={`${styles.lobby__form}`}>
+
+
+              <form id={`${styles.lobby__form}`} onSubmit={(event) => {event.preventDefault()}}>
                 <div className={`${styles.form__field__wrapper}`}>
                   <label>Your Name</label>
                   <input type="text" name="name" required placeholder="Enter your display name..." />
@@ -129,7 +129,7 @@ export default function Home() {
                 </div>
 
                 <div className={`${styles.form__field__wrapper}`}>
-                  <button type="submit">Go to Room 
+                  <button type="submit">Go to Room
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
                   </button>
                 </div>
