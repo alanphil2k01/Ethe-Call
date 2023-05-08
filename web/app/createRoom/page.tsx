@@ -1,7 +1,7 @@
 'use client';
 
 import { ChangeEvent, useRef, useState } from 'react';
-import "./design.css";
+import styles from "./page.module.css";
 import { Blockchain } from "@/app/blockchain";
 import { useContext } from 'react';
 import { ZeroAddress, isAddress } from 'ethers';
@@ -23,9 +23,13 @@ export default function users() {
         const textFields = [];
         for (let i = 0; i < selectedNumber; i++) {
             textFields.push(
-            <div className="div1" key={i}>
-                <label className="label1" htmlFor={`text-${i}`}>User {i+1}: </label>
-                <input value={users[i]} placeholder="nickname or address" onChange={(event) => users.current[i] = event.target.value} className="input1 placeholder-gray-500 placeholder-opacity-80" type="text" />
+            // <div className="div1" key={i}>
+            //     <label className="label1" htmlFor={`text-${i}`}>User {i+1}:</label>
+            //     <input value={users[i]} placeholder="nickname or address" onChange={(event) => users.current[i] = event.target.value} className="input1 placeholder-gray-500 placeholder-opacity-80" type="text" />
+            // </div>
+            <div className={`${styles.form__field__wrapper}`} key={i}>
+                <label htmlFor={`text-${i}`}>User {i+1}: </label>
+                <input type="text" name="room" required placeholder="Username or address"  value={users[i]} onChange={(event) => users.current[i] = event.target.value}/>
             </div>
       );
     }
@@ -33,7 +37,7 @@ export default function users() {
   };
 
     const options = [];
-    for (let i = 1; i <= 100; i++) {
+    for (let i = 1; i <= 5; i++) {
         options.push(
             <option key={i} value={i}>
                 {i}
@@ -48,6 +52,7 @@ export default function users() {
         }
         if (roomID === "") {
             alert("Please enter a call ID");
+            //router.push(`/room2/123`);
             return;
         }
 
@@ -82,22 +87,41 @@ export default function users() {
     }
 
   return (
-    <div className="main">
-        <div className="flex flex-row mt-4 items-center w-full justify-around">
-            <div className="">
-                <label className="label1">Room ID: </label>
-                <input placeholder="Room ID" required className="input1 placeholder-gray-500 placeholder-opacity-80" type="text" onChange={(event) => setRoomId(event.target.value)} />
+    // <div className="main">
+    //     <div className="flex flex-row mt-4 items-center w-full justify-around">
+    //         <div className="">
+    //             <label className="label1">Room ID: </label>
+    //             <input placeholder="Room ID" required className="input1 placeholder-gray-500 placeholder-opacity-80" type="text" onChange={(event) => setRoomId(event.target.value)} />
+    //         </div>
+    //     </div>
+    //     <div className="div2 pb-4">
+    //         <label className="label2" htmlFor="number">Select number of users in the call: </label>
+    //         <select className="select" id="number" value={selectedNumber} onChange={handleChange}>
+    //             {options}
+    //         </select>
+    //         {createTextFields()}
+    //     </div>
+    // </div>
+    <main id={`${styles.room__lobby__container}`}>
+        <div id={`${styles.form__container}`}>
+              <div id={`${styles.form__container__header}`}>
+                  <p className={`${styles.text}`}>👋 Set call details</p>
+              </div>
+
+              <form id={`${styles.lobby__form}`} onSubmit={(event) => {event.preventDefault()}}>
+                  <div className={`${styles.form__field__wrapper}`}>
+                    <span style={{display: "flex", flexDirection: "row"}}>
+                        <label htmlFor="number">Select number of users in the call: </label>
+                        <select className="select" id="number" value={selectedNumber} onChange={handleChange}>
+                            {options}
+                        </select>
+                    </span>
+                    {createTextFields()}
+                <button onClick={createRoom}>Create Room</button>
+                </div>
+              </form>
             </div>
-            <button className="btn1" onClick={createRoom}>Createe Room</button>
-        </div>
-        <div className="div2 pb-4">
-            <label className="label2" htmlFor="number">Select number of users in the call: </label>
-            <select className="select" id="number" value={selectedNumber} onChange={handleChange}>
-                {options}
-            </select>
-            {createTextFields()}
-        </div>
-    </div>
-  );
+        </main>
+    );
 
 }

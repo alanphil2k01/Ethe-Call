@@ -21,7 +21,8 @@ export default function WalletButton() {
             connectMetaMask();
         }
     }
+    // 
     return (
-        <button onClick={walletBtnAction} className={ !loadedWeb3 ? styles.button : styles.button_active }>{text}</button>
+        <button onClick={walletBtnAction} className={!loadedWeb3 ? `${styles.newStyle}` : `${styles.newStyle_active}`}>{text}</button>
     );
 }

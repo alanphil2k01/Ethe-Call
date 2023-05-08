@@ -20,8 +20,8 @@ export default function RootLayout({
       <body className='bg-[#1a1a1a]'>
         <BlockchainProvider>
             <FingerprintProvider>
-                <Navbar>
-                </Navbar>
+                <MyNewNavbar>
+                </MyNewNavbar>
                 { children }
             </FingerprintProvider>
         </BlockchainProvider>

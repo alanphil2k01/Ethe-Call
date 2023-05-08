@@ -13,6 +13,7 @@ export default function Home() {
     const [generatedCertificate, setGeneratedCertificate] = useState(false);
     const { signer, isAdmitted, roomExists, loadedWeb3 } = useContext(Blockchain);
     const { setFingerprint, setNickname } = useContext(Blockchain);
+    const {displayName} = useContext(Blockchain);
     const { certificates, generateNewCertificate } = useContext(Fingerprint);
     const nicknameRef = useRef<HTMLInputElement>();
 
@@ -37,11 +38,11 @@ export default function Home() {
     }
 
     const createRoom = () => {
-    if (!loadedWeb3) {
-        alert("Please connect your Metamask Wallet");
-        return;
-    }
-    router.push(`/createRoom/`)
+      if (!loadedWeb3) {
+          alert("Please connect your Metamask Wallet");
+          return;
+      }
+      router.push(`/createRoom/`)
     }
 
     async function generate() {
@@ -72,7 +73,7 @@ export default function Home() {
             <main id={`${styles.room__lobby__container}`}>
               <div id={`${styles.form__container}`}>
                 <div id={`${styles.form__container__header}`}>
-                    <p className={`${styles.text}`}>👋 Generate Certificate and Set Username</p>
+                    <p className={`${styles.text}`}>Setting up your profile 👨‍🏭🔧</p>
                 </div>
 
                 <form id={`${styles.lobby__form}`} onSubmit={(event) => {event.preventDefault()}}>
@@ -82,13 +83,9 @@ export default function Home() {
                     </button>
                   </div>
 
-                  <div className={`${styles.form__field__wrapper}`}>
-                    <label>Set Username</label>
-                    <input type="text" ref={nicknameRef} name="name" placeholder="Enter your display name..." />
-                    <button onClick={set}>Set Nickname
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
-                    </button>
-                  </div>
+                  {/* <div className={`${styles.form__field__wrapper}`}>
+
+                  </div> */}
 
                 </form>
               </div>
@@ -120,16 +117,21 @@ export default function Home() {
               <form id={`${styles.lobby__form}`} onSubmit={(event) => {event.preventDefault()}}>
                 <div className={`${styles.form__field__wrapper}`}>
                   <label>Your Name</label>
-                  <input type="text" name="name" required placeholder="Enter your display name..." />
+                  <div style={{display:"flex", flexDirection: "row", gap: "1em", alignItems: "baseline", boxSizing: "border-box", padding: "0px"}}>
+                    <input type="text" ref={nicknameRef} name="name" placeholder={displayName} />
+                    <button onClick={set} style={{boxSizing: "border-box"}}>Set Nickname
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
+                    </button>
+                  </div>
                 </div>
 
                 <div className={`${styles.form__field__wrapper}`}>
                   <label>Room Name</label>
-                  <input type="text" name="room" required placeholder="Enter room name..." />
+                  <input type="text" name="room" onChange={(e) => setRoomName(e.target.value)} value={roomName} required placeholder="Enter room name..." />
                 </div>
 
                 <div className={`${styles.form__field__wrapper}`}>
-                  <button type="submit">Go to Room
+                  <button type="submit" onClick={createRoom}>Create room
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
                   </button>
                 </div>

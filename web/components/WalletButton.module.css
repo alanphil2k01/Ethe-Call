@@ -39,3 +39,45 @@
 .button_active:hover {
     background-color: rgba(0, 169, 136, 0.8);
 }
+
+.newStyle{
+    color: #fff;
+    text-decoration: none;
+    transition: 1s;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease-in-out;
+    padding-bottom: 1px;
+    display: block;
+    background-color: #845695;
+    padding: 8px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 5px;
+}
+
+.newStyle:hover {
+    background-color: #845695;
+}
+
+.newStyle_active{
+    color: #fff;
+    text-decoration: none;
+    transition: 1s;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease-in-out;
+    padding-bottom: 1px;
+    display: block;
+    background-color: #1EC296;
+    padding: 8px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 5px;
+}
+
+.newStyle_active:hover {
+    background-color: #1B998B;
+}
+
+/*
+#D2B537
+*/
