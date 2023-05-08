@@ -1,18 +1,26 @@
-import React, { useState } from "react";
+import React, { MutableRefObject, DragEvent } from "react";
 import styles from "./Chat.module.css"; // Import the CSS module
 import Message from "./Message";
+import { MessageContent } from "@/types/message";
 
-const Chat = ({ msgs, chatInputRef, sendChatMsg }) => {
+export default function Chat ({ msgs, chatInputRef, sendChatMsg, onDrop }: {
+    msgs: MessageContent[],
+    chatInputRef: MutableRefObject<HTMLInputElement>
+    sendChatMsg: () => void,
+    onDrop: (event: DragEvent<HTMLDivElement>) => void,
+}) {
 
   return (
-        <div id={`${styles.messages}`}>
+        <div id={`${styles.messages}`} onDrop={onDrop} onDragOver={(e) => e.preventDefault()}>
+        {/*
             <Message message="Convert RGB colors to HEX when styling using HTML & CSS"></Message>
             <Message message="Convert RGB colors to HEX when styling using HTML & CSS"></Message>
             <Message message="Convert RGB colors to HEX when styling using HTML & CSS"></Message>
-            {msgs.map((msg, index) => (
-              <Message message={msg}></Message>
+        */}
+            {msgs.map((msg: MessageContent, index: React.Key) => (
+              <Message key={index} message={msg} />
             ))}
-            <form id={`${styles.message__form}`}>
+            <form id={`${styles.message__form}`} onSubmit={(event) => event.preventDefault()}>
                 <input type="text" name="message" placeholder="Send a message...." ref={chatInputRef} onKeyDown={(event) => {
                   if (event.key === "Enter") {
                     sendChatMsg();
@@ -23,5 +31,3 @@ const Chat = ({ msgs, chatInputRef, sendChatMsg }) => {
         </div>
     );
 };
-
-export default Chat;

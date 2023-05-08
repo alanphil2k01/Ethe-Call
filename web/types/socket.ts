@@ -2,7 +2,7 @@ export interface UserData {
     address: string;
     message: string;
     sign: string;
-    nickname: string;
+    displayName: string;
 }
 
 export interface ServerToClientEvents {

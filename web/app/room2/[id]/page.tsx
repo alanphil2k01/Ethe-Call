@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEventHandler, useContext, useEffect, useRef, useState } from "react";
+import { ChangeEventHandler, useContext, useEffect, useRef, useState, DragEvent } from "react";
 import io, { Socket } from "socket.io-client";
 import { ClientToServerEvents, ServerToClientEvents, UserData } from '@/types/socket';
 import MyVideoComponent from "@/components/MyVideoComponent";
@@ -20,6 +20,8 @@ import mic from "../../../../src/mic.png";
 import phone from "../../../../src/phone.png";
 import invite from "../../../../src/invite.png";
 import Link from "next/link";
+import useFileUpload from "@/hooks/FileUpload";
+import { MessageType, MessageContent } from "@/types/message";
 
 type DeviceInfo = {
     id: string,
@@ -200,10 +202,12 @@ const Room = ({ params }) => {
     const socketCreated = useRef(false)
     const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents>>();
     const userData = useRef<UserData>(null);
-    const [chatMsgs, setChatMsgs] = useState<string[]>([]);
+    const [chatMsgs, setChatMsgs] = useState<MessageContent[]>([]);
     const chatInputRef = useRef<HTMLInputElement>()
     const [camEnabled, setCamEnabled] = useState(true);
     const [micEnabled, setMicEnabled] = useState(true);
+
+    const { uploadFiles } = useFileUpload();
 
     const {
         isLoadingStream,
@@ -282,7 +286,7 @@ const Room = ({ params }) => {
         console.log("Logged in as " + signer.address);
         userData.current = {
             address: signer.address,
-            nickname: displayName,
+            displayName: displayName,
             message: message,
             sign: sign,
         }
@@ -315,7 +319,7 @@ const Room = ({ params }) => {
     }
 
     function dcMessageHandler(event: MessageEvent) {
-        const msg = event.data;
+        const msg = JSON.parse(event.data);
         setChatMsgs(prevChats => [...prevChats, msg]);
     }
 
@@ -370,17 +374,21 @@ const Room = ({ params }) => {
         return peer;
     }
 
-    function sendChatMsg() {
-        const val = chatInputRef.current.value;
+    function sendDcMsgToAllPeers(msg: MessageContent) {
         peers.forEach(peer => {
             if (peer.dcReady) {
-                peer.dc.send(`${val} from ${socketRef.current.id}`);
+                peer.dc.send(JSON.stringify(msg));
             } else {
                 console.log("Peer dc is not ready");
             }
         })
+        setChatMsgs(prevChats => [...prevChats, { ...msg, author: "you" }]);
+    }
+
+    function sendChatMsg() {
+        const msg = chatInputRef.current.value;
+        sendDcMsgToAllPeers({ type: MessageType.CHAT, data: msg, author: displayName });
         chatInputRef.current.value = "";
-        setChatMsgs(prevChats => [...prevChats, `you sent ${val}`]);
     }
 
     return (
@@ -400,7 +408,7 @@ const Room = ({ params }) => {
                     <Members></Members>
                 </section>
                 <section className={`${styles.stream__container}`}>
-                    {/* <MyVideoComponent stream={userVideoRef} peers={peers} /> */}
+                    <MyVideoComponent stream={userVideoRef} peers={peers} />
 
                     {/* <div className={`${styles.controls}`}>
                         <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleCamera()})}>
@@ -421,7 +429,15 @@ const Room = ({ params }) => {
                     <DeviceList deviceList={cameraList.current} onChange={(e) => {setCamera(e.target.value)}} /> */}
                 </section>
                 <section className={`${styles.messages__container}`}>
-                    <Chat msgs={chatMsgs} chatInputRef={chatInputRef} sendChatMsg={sendChatMsg} />
+                    <Chat msgs={chatMsgs} chatInputRef={chatInputRef} sendChatMsg={sendChatMsg} onDrop={(event: DragEvent<HTMLDivElement>) => {
+                        event.preventDefault();
+                        const files = Array.from(event.dataTransfer.files);
+                        if (files.length > 0) {
+                            uploadFiles(files).then((cid) => {
+                                sendDcMsgToAllPeers({ type: MessageType.FILE, data: cid, author: displayName });
+                            });
+                        }
+                    }} />
                 </section>
         {/* <div>
             <div className="h-5"></div>
