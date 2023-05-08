@@ -10,11 +10,10 @@ import { Fingerprint } from "./fingerprint";
 export default function Home() {
     const router = useRouter()
     const [roomName, setRoomName] = useState('')
-    const [generatedCertificate, setGeneratedCertificate] = useState(false);
     const { signer, isAdmitted, roomExists, loadedWeb3 } = useContext(Blockchain);
     const { setFingerprint, setNickname } = useContext(Blockchain);
     const {displayName} = useContext(Blockchain);
-    const { certificates, generateNewCertificate } = useContext(Fingerprint);
+    const { generatedCertificate, setGeneratedCertificate, generateNewCertificate } = useContext(Fingerprint);
     const nicknameRef = useRef<HTMLInputElement>();
 
     async function joinRoom() {
@@ -131,6 +130,10 @@ export default function Home() {
                 </div>
 
                 <div className={`${styles.form__field__wrapper}`}>
+                  <button type="submit" onClick={joinRoom}>Join room
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
+                  </button>
+                  <label>Or</label>
                   <button type="submit" onClick={createRoom}>Create room
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
                   </button>

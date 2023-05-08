@@ -1,11 +1,13 @@
 "use client";
 
-import { ReactNode, createContext, useEffect, useState } from "react";
+import { Dispatch, ReactNode, SetStateAction, createContext, useState } from "react";
 
 type FingerprintVals = {
     certificates: RTCCertificate[];
     generateNewCertificate: () => Promise<RTCCertificate>;
     getUserFingerprint: () => string;
+    generatedCertificate: Boolean;
+    setGeneratedCertificate: Dispatch<SetStateAction<Boolean>>;
 }
 
 export function extractFingerprint(sdp: RTCSessionDescription): string {
@@ -16,6 +18,7 @@ export const Fingerprint = createContext<FingerprintVals>(null);
 
 export function FingerprintProvider({ children }: { children: ReactNode }) {
     const [certificates, setCertificates] = useState<RTCCertificate[]>([])
+    const [generatedCertificate, setGeneratedCertificate] = useState(false);
 
     const config = {
         name: "RSASSA-PKCS1-v1_5",
@@ -39,6 +42,8 @@ export function FingerprintProvider({ children }: { children: ReactNode }) {
             certificates,
             generateNewCertificate,
             getUserFingerprint,
+            generatedCertificate,
+            setGeneratedCertificate,
         }}>
             { children }
         </Fingerprint.Provider>

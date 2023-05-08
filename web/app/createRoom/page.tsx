@@ -110,6 +110,7 @@ export default function users() {
 
               <form id={`${styles.lobby__form}`} onSubmit={(event) => {event.preventDefault()}}>
                   <div className={`${styles.form__field__wrapper}`}>
+                    <input placeholder="Room ID" required type="text" onChange={(event) => setRoomId(event.target.value)} />
                     <span style={{display: "flex", flexDirection: "row"}}>
                         <label htmlFor="number">Select number of users in the call: </label>
                         <select className="select" id="number" value={selectedNumber} onChange={handleChange}>
