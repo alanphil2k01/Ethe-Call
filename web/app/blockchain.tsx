@@ -5,6 +5,7 @@ import contract_addr from "@common/contract_addr";
 import { BrowserProvider, Contract, JsonRpcSigner, SignatureLike, ZeroAddress, verifyMessage } from "ethers";
 import { ReactNode, createContext, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
+import { UserData } from "@/types/socket";
 
 declare global {
   interface Window{
@@ -45,6 +46,7 @@ interface BlockchainVals {
     roomExists: (call_id: string) => Promise<Boolean>;
     isAdmitted: (call_id: string, address: string) => Promise<Boolean>;
     isAdmin: (call_id: string, address: string) => Promise<Boolean>;
+    verifyPeer: (sd: RTCSessionDescription, peerData: UserData) => Promise<Boolean>;
 }
 
 export const Blockchain = createContext<BlockchainVals>(null);
@@ -195,6 +197,29 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
         }
     }
 
+    async function verifyPeer(sd: RTCSessionDescription, peerData: UserData): Promise<Boolean> {
+        if (!verifySign(peerData.message, peerData.sign)) {
+            console.log("Messaage Sign verification failed");
+            return false;
+        }
+        const addr = verifyMessage(peerData.message, peerData.sign);
+        if (addr !== peerData.address) {
+            console.log("Invalid peer data");
+            return false;
+        }
+        const fingerprint = sd.sdp.match(/a=fingerprint:sha-256\s(.+)/)[1].toUpperCase();;
+        const storedFingerprint = (await getFingerprint(addr)).toUpperCase();
+        if (fingerprint !== storedFingerprint) {
+            console.log(fingerprint);
+            console.log(storedFingerprint);
+            console.log(fingerprint === storedFingerprint);
+            console.log("Invalid fingerprint");
+            return false;
+        }
+        console.log("Verified User: " + peerData.displayName);
+        return true;
+    }
+
     return (
         <Blockchain.Provider value={{
             signer,
@@ -217,6 +242,7 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
             roomExists,
             isAdmitted,
             isAdmin,
+            verifyPeer,
         }}>
             {children}
         </Blockchain.Provider>

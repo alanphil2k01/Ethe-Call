@@ -221,7 +221,7 @@ const Room = ({ params }) => {
 
     const router = useRouter();
     const { certificates } = useContext(Fingerprint);
-    const { loadedWeb3, signer, message, sign, displayName, roomExists, isAdmitted } = useContext(Blockchain);
+    const { loadedWeb3, signer, message, sign, displayName, roomExists, isAdmitted, verifyPeer } = useContext(Blockchain);
 
     function getSocket(url: string) {
         socketRef.current = io(url)
@@ -238,19 +238,27 @@ const Room = ({ params }) => {
         })
         socketRef.current.on("user joined", (offer, peerData) => {
             console.log("user joined");
-            const peer = addPeer(offer, peerData, userStreamRef.current);
-
-            peersRef.current.push(peer)
-
-            setPeers(users => [...users, peer]);
+            verifyPeer(offer, peerData).then((validUser) => {
+                if (validUser) {
+                    const peer = addPeer(offer, peerData, userStreamRef.current);
+                    peersRef.current.push(peer)
+                    setPeers(users => [...users, peer]);
+                }
+            });
         });
         socketRef.current.on("receiving returned answer", (answer, returnAddr) => {
             const peer = peersRef.current.find((peer) => peer.peerData.address === returnAddr);
+            verifyPeer(answer, peer.peerData).then((validUser) => {
+                if (!validUser) {
+                    peer.pc.close();
+                }
+            });
             console.log("Receiving returned answer");
             peer.setRemoteSDP(answer);
         });
         socketRef.current.on("ice candidate", (candidate, fromAddr) => {
             const peer = peersRef.current.find((peer) => peer.peerData.address === fromAddr);
+            if (!peer) return;
             peer.pc
                 .addIceCandidate(new RTCIceCandidate(candidate))
                 .catch((e) => console.log(e));
