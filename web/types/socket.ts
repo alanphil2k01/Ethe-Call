@@ -11,6 +11,7 @@ export interface ServerToClientEvents {
     "user joined": (offer: RTCSessionDescription, peerData: UserData) => void;
     "receiving returned answer": (answer: RTCSessionDescription, returnAddr: string) => void;
     "ice candidate": (candidate: RTCIceCandidate, fromAddr: string) => void;
+    "user disconnected": (addr: string) => void;
 }
 
 export interface ClientToServerEvents {

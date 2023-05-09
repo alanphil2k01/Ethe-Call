@@ -81,11 +81,10 @@ const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
 
         socket.on('disconnect', () => {
             const roomID = socketToRoom[socket.id];
-            let room = users[roomID];
-            if (room) {
-                room = room.filter(user => user.socketID !== socket.id);
-                users[roomID] = room;
-            }
+            users[roomID] = users[roomID]?.filter(user => user.socketID !== socket.id);
+            users[roomID].forEach((user) => {
+                io.to(user.socketID).emit("user disconnected", socket.data.userData.address);
+            });
         });
 
         socket.on("ice candidate", (candidate) => {
