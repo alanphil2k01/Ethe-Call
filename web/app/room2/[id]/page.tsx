@@ -238,13 +238,9 @@ const Room = ({ params }) => {
         })
         socketRef.current.on("user joined", (offer, peerData) => {
             console.log("user joined");
-            verifyPeer(offer, peerData).then((validUser) => {
-                if (validUser) {
-                    const peer = addPeer(offer, peerData, userStreamRef.current);
-                    peersRef.current.push(peer)
-                    setPeers(users => [...users, peer]);
-                }
-            });
+            const peer = addPeer(offer, peerData, userStreamRef.current);
+            peersRef.current.push(peer)
+            setPeers(users => [...users, peer]);
         });
         socketRef.current.on("receiving returned answer", (answer, returnAddr) => {
             const peer = peersRef.current.find((peer) => peer.peerData.address === returnAddr);
@@ -258,7 +254,7 @@ const Room = ({ params }) => {
         });
         socketRef.current.on("ice candidate", (candidate, fromAddr) => {
             const peer = peersRef.current.find((peer) => peer.peerData.address === fromAddr);
-            if (!peer) return;
+            console.log("Received ice candidates");
             peer.pc
                 .addIceCandidate(new RTCIceCandidate(candidate))
                 .catch((e) => console.log(e));
@@ -291,7 +287,6 @@ const Room = ({ params }) => {
     }
 
     async function initUserData() {
-        console.log("Logged in as " + signer.address);
         userData.current = {
             address: signer.address,
             displayName: displayName,
@@ -365,6 +360,13 @@ const Room = ({ params }) => {
             dcMessageHandler,
             peerData,
         })
+
+        verifyPeer(offer, peerData).then((validUser) => {
+            if (!validUser) {
+                peer.pc.close();
+            }
+        });
+
         peer.pc.ontrack = (event) => {
             console.log("Got Tracks: ", event.streams[0].getTracks());
             const index = peersRef.current.findIndex(p => p === peer)
