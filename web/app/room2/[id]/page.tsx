@@ -82,11 +82,11 @@ const Room = ({ params }) => {
         });
         socketRef.current.on("receiving returned answer", (answer, returnAddr) => {
             const peer = peersRef.current.find((peer) => peer.peerData.address === returnAddr);
-            verifyPeer(answer, peer.peerData).then((validUser) => {
-                if (!validUser) {
-                    peer.pc.close();
-                }
-            });
+            // verifyPeer(answer, peer.peerData).then((validUser) => {
+            //     if (!validUser) {
+            //         peer.pc.close();
+            //     }
+            // });
             console.log("Receiving returned answer");
             peer.setRemoteSDP(answer);
         });
@@ -130,7 +130,7 @@ const Room = ({ params }) => {
 
     async function initUserData() {
         userData.current = {
-            address: signer.address,
+            address: (Math.random() + 1).toString(36).substring(7), //signer.address,
             displayName: displayName,
             message: message,
             sign: sign,
@@ -203,11 +203,11 @@ const Room = ({ params }) => {
             peerData,
         })
 
-        verifyPeer(offer, peerData).then((validUser) => {
-            if (!validUser) {
-                peer.pc.close();
-            }
-        });
+        // verifyPeer(offer, peerData).then((validUser) => {
+        //     if (!validUser) {
+        //         peer.pc.close();
+        //     }
+        // });
 
         peer.pc.ontrack = (event) => {
             console.log("Got Tracks: ", event.streams[0].getTracks());
@@ -260,9 +260,10 @@ const Room = ({ params }) => {
                     <Members></Members>
                 </section>
                 <section className={`${styles.stream__container}`}>
-                    <MyVideoComponent stream={userVideoRef} peers={peers} />
-
-                    {/* <div className={`${styles.controls}`}>
+                    {/*<div className={`${styles.stream__box}`}>
+                        <MyVideoComponent stream={userVideoRef} peers={peers} />
+                    </div>
+                     <div className={`${styles.controls}`}>
                         <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleCamera()})}>
                             <Image src={camera} alt="camera" className={`${styles.imgCamera} ${styles.images}`}/>
                         </div>
@@ -275,7 +276,7 @@ const Room = ({ params }) => {
                             </Link>
                         </div>
                     </div> */}
-                    <Stream camEnabled={camEnabled} micEnabled={micEnabled} cameraHandler={ () => {
+                    <Stream stream={userVideoRef} peers={peers} camEnabled={camEnabled} micEnabled={micEnabled} cameraHandler={ () => {
                             userStreamRef.current.getTracks().forEach((track) => {
                                 if (track.kind === "video") {
                                     setCamEnabled((prev) => {
