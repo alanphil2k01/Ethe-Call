@@ -1,18 +1,26 @@
 "use client";
 import styles from "./Stream.module.css";
-import MyVideoComponent from "./MyVideoComponent";
+import MyVideoComponent, {PeerVideo} from "./MyVideoComponent";
+import {useEffect} from 'react';
 
-const Stream = ({ stream, peers, camEnabled, micEnabled, cameraHandler, audioHandler, disconnectHandler }) => {
-
-  return (
+const Stream = ({ focussedOn, setFocussedOn, stream, peers, camEnabled, micEnabled, cameraHandler, audioHandler, disconnectHandler }) => {
+    useEffect(()=>{
+        console.log(focussedOn)
+    },[focussedOn]
+    )
+    return (
         <div id={`${styles.stream__container}`}>
             <div id={`${styles.stream__box}`}>
                 <div id={`${styles.video__container}`}>
-                    
+                    {focussedOn === -1 ? (
+                    <div className={`${styles.video__player}`}>
+                        <video autoPlay muted ref={stream} />
+                    </div>
+                    ):(<PeerVideo stream={peers[focussedOn].remoteStream} focussedOn={focussedOn} setFocussedOn={setFocussedOn} index={focussedOn}/>)}
                 </div>
             </div>
             <div id={`${styles.streams__container}`}>
-                <MyVideoComponent stream={stream} peers={peers} />
+                <MyVideoComponent stream={stream} peers={peers} focussedOn={focussedOn} setFocussedOn={setFocussedOn}/>
             </div>
             <div className={`${styles.stream__actions}`}>
                 <button className={camEnabled ? `${styles.active}` : ""} onClick={cameraHandler}>

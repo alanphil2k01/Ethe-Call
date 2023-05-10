@@ -1,10 +1,10 @@
 "use client";
 
-import { MutableRefObject, useEffect, useRef } from "react";
+import { Dispatch, MutableRefObject, SetStateAction, useEffect, useRef } from "react";
 import { Peer } from "@/app/peer";
 import styles from "./MyVideoComponent.module.css";
 
-function PeerVideo ({ stream }: { stream: MediaStream }) {
+export function PeerVideo ({ stream, focussedOn, setFocussedOn, index }: { stream: MediaStream, focussedOn: number, setFocussedOn: Dispatch<SetStateAction<number>>, index:number }) {
     const peerVidRef = useRef<HTMLVideoElement>();
 
     useEffect(() => {
@@ -17,26 +17,26 @@ function PeerVideo ({ stream }: { stream: MediaStream }) {
         // </div>
       <div className={`${styles.video__container}`}>
         <div className={`${styles.video__player}`}>
-            <video autoPlay ref={peerVidRef} />
-          </div>
+            <video autoPlay onClick={()=>{setFocussedOn(index)}} ref={peerVidRef} />
         </div>
+      </div>
     );
 }
 
-const MyVideoComponent = ({ stream, peers }: { stream: MutableRefObject<HTMLVideoElement>, peers: Peer[]}) => {
+const MyVideoComponent = ({ stream, peers, focussedOn, setFocussedOn }: { stream: MutableRefObject<HTMLVideoElement>, peers: Peer[], focussedOn: number, setFocussedOn: Dispatch<SetStateAction<number>>}) => {
   return (
     <div id={`${styles.streams__container}`}>
-      <div className={`${styles.video__container}`}>
+      { focussedOn !== 1 && <div className={`${styles.video__container}`}>
         <div className={`${styles.video__player}`}>
-          <video autoPlay muted className="h-80 w-80 bg-blue" ref={stream} />
+          <video autoPlay onClick={()=>{setFocussedOn(-1)}} muted ref={stream} />
         </div>
-      </div>
+      </div>}
         {peers && peers.map((peer, index) => {
-          return (
+          return index !== focussedOn && (
             <div key={index}>
-              <PeerVideo stream={peer.remoteStream} />
+              <PeerVideo stream={peer.remoteStream} focussedOn={focussedOn} setFocussedOn={setFocussedOn} index={index}/>
             </div>
-          );
+            )
         })}
     </div>
   );

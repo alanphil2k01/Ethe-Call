@@ -44,6 +44,7 @@ const Room = ({ params }) => {
     const chatInputRef = useRef<HTMLInputElement>()
     const [camEnabled, setCamEnabled] = useState(true);
     const [micEnabled, setMicEnabled] = useState(true);
+    const [focussedOn, setFocussedOn] = useState(-1);
 
     const { uploadFiles } = useFileUpload();
 
@@ -242,6 +243,10 @@ const Room = ({ params }) => {
         sendDcMsgToAllPeers({ type: MessageType.CHAT, data: msg, author: displayName });
         chatInputRef.current.value = "";
     }
+    
+    /*for(let i = 0; videoFrames.length > i; i++){
+        videoFrames[i].addEventListener('click', expandVideoFrame)
+    }*/
 
     return (
         <main className={`${styles.container}`}>
@@ -257,7 +262,7 @@ const Room = ({ params }) => {
                     }} >Check Status</button>
                 */}
                 <section className={`${styles.members__container}`}>
-                    <Members></Members>
+                    <Members peers={peers}></Members>
                 </section>
                 <section className={`${styles.stream__container}`}>
                     {/*<div className={`${styles.stream__box}`}>
@@ -276,7 +281,7 @@ const Room = ({ params }) => {
                             </Link>
                         </div>
                     </div> */}
-                    <Stream stream={userVideoRef} peers={peers} camEnabled={camEnabled} micEnabled={micEnabled} cameraHandler={ () => {
+                    <Stream focussedOn = {focussedOn} setFocussedOn = {setFocussedOn} stream={userVideoRef} peers={peers} camEnabled={camEnabled} micEnabled={micEnabled} cameraHandler={ () => {
                             userStreamRef.current.getTracks().forEach((track) => {
                                 if (track.kind === "video") {
                                     setCamEnabled((prev) => {
