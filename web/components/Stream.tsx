@@ -11,13 +11,11 @@ const Stream = ({ focussedOn, setFocussedOn, stream, peers, camEnabled, micEnabl
     return (
         <div id={`${styles.stream__container}`}>
             <div id={`${styles.stream__box}`}>
-                <div id={`${styles.video__container}`}>
+                
                     {focussedOn === -1 ? (
-                    <div className={`${styles.video__player}`}>
                         <video autoPlay muted ref={stream} />
-                    </div>
-                    ):(<PeerVideo stream={peers[focussedOn].remoteStream} focussedOn={focussedOn} setFocussedOn={setFocussedOn} index={focussedOn}/>)}
-                </div>
+                    ):(<PeerVideo stream={peers[focussedOn].remoteStream} focussedOn={focussedOn} setFocussedOn={setFocussedOn} index={focussedOn} style={"noStyle"}/>)}
+                
             </div>
             <div id={`${styles.streams__container}`}>
                 <MyVideoComponent stream={stream} peers={peers} focussedOn={focussedOn} setFocussedOn={setFocussedOn}/>
