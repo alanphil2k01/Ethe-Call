@@ -44,6 +44,7 @@ const Room = ({ params }) => {
     const [camEnabled, setCamEnabled] = useState(false);
     const [micEnabled, setMicEnabled] = useState(false);
     const [screenSharing, setScreenSharing] = useState(false);
+    const [focussedOn, setFocussedOn] = useState(-1);
 
     const { uploadFiles } = useFileUpload();
 
@@ -278,6 +279,10 @@ const Room = ({ params }) => {
         chatInputRef.current.value = "";
     }
 
+    /*for(let i = 0; videoFrames.length > i; i++){
+        videoFrames[i].addEventListener('click', expandVideoFrame)
+    }*/
+
     return (
         <main className={`${styles.container}`}>
             <div className={`${styles.room__container}`}>
@@ -293,13 +298,14 @@ const Room = ({ params }) => {
                 */}
                 {/*
                 <section className={`${styles.members__container}`}>
-                    <Members></Members>
+                    <Members peers={peers}></Members>
                 </section>
                 */}
                 <section className={`${styles.stream__container}`}>
-                    <MyVideoComponent stream={userVideoRef} peers={peers} />
-
-                    {/* <div className={`${styles.controls}`}>
+                    {/*<div className={`${styles.stream__box}`}>
+                        <MyVideoComponent stream={userVideoRef} peers={peers} />
+                    </div>
+                     <div className={`${styles.controls}`}>
                         <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleCamera()})}>
                             <Image src={camera} alt="camera" className={`${styles.imgCamera} ${styles.images}`}/>
                         </div>
@@ -313,6 +319,10 @@ const Room = ({ params }) => {
                         </div>
                     </div> */}
                     <Stream
+                        focussedOn={focussedOn}
+                        setFocussedOn={setFocussedOn}
+                        stream={userVideoRef}
+                        peers={peers}
                         camEnabled={camEnabled}
                         micEnabled={micEnabled}
                         screenSharing={screenSharing}

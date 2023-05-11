@@ -6,31 +6,14 @@ export default function Members(props){
         <div id={`${styles.members__container}`}>
             <div id={`${styles.members__header}`}>
                 <p className={`${styles.text}`}>Participants</p>
-                <strong id={`${styles.members__count}`}>27</strong>
+                <strong id={`${styles.members__count}`}>{props.peers.length+1}</strong>
             </div>
 
             <div id={`${styles.member__list}`}>
-                <Member name="Sulammita"></Member>
-                <Member name="Dennis Ivy"></Member>
-                <Member name="Shahriar P. Shuvo 👋:"></Member>
-                <Member name="Sulammita"></Member>
-                <Member name="Dennis Ivy"></Member>
-                <Member name="Shahriar P. Shuvo 👋:"></Member>
-                <Member name="Sulammita"></Member>
-                <Member name="Dennis Ivy"></Member>
-                <Member name="Shahriar P. Shuvo 👋:"></Member>
-                <Member name="Sulammita"></Member>
-                <Member name="Dennis Ivy"></Member>
-                <Member name="Shahriar P. Shuvo 👋:"></Member>
-                <Member name="Sulammita"></Member>
-                <Member name="Dennis Ivy"></Member>
-                <Member name="Shahriar P. Shuvo 👋:"></Member>
-                <Member name="Sulammita"></Member>
-                <Member name="Dennis Ivy"></Member>
-                <Member name="Shahriar P. Shuvo 👋:"></Member>
-                <Member name="Sulammita"></Member>
-                <Member name="Dennis Ivy"></Member>
-                <Member name="Shahriar P. Shuvo 👋:"></Member>
+                <Member name="You"></Member>
+                {props.peers.map((peer)=>{
+                    return (<Member name={peer.peerData.displayName}/>)
+                })}
             </div>
         </div>
     );

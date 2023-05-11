@@ -8,6 +8,45 @@
     height: 100%;
 }
 
+#stream__container {
+  justify-self: center;
+  width: calc(100% - 40.7rem);
+  position: fixed;
+  left: 15.7rem;
+  top: clac(100vh - 72px);
+  overflow-y: auto;
+  height: 100%;
+}
+
+#stream__box{
+  background-color: #3f434a;
+  height: 60vh;
+  display: flex;
+}
+
+#stream__box .video__container{
+  border: 2px solid #000;
+  border-radius: 0;
+  height: 100%!important;
+  width:100%!important;
+
+  background-size: 300px;
+}
+
+#stream__box video{
+  border-radius: 0;
+}
+
+#streams__container{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2em;
+  justify-content: center;
+  align-items: center;
+  margin-top: 25px;
+  margin-bottom: 225px;
+}
+
 .stream__actions {
     position: fixed;
     bottom: 1rem;
@@ -46,4 +85,37 @@
   .stream__actions a:hover,
   .stream__actions button:hover {
     background-color: #845695;
+  }
+
+  .video__container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border:2px solid #b366f9;
+    border-radius: 50%;
+    cursor: pointer;
+    overflow: hidden;
+    height: 300px;
+    width: 300px;
+  
+    background-image: url("/images/logo.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 75px;
+  }
+  
+  .video-player{
+    height: 100%;
+    width: 100%;
+  }
+  
+  .video-player video{
+    border-radius: 50%;
+  }
+  
+  @media (max-width: 1400px) {
+    .video__container{
+      height: 200px;
+      width: 200px;
+    }
   }

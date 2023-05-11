@@ -1,10 +1,32 @@
 "use client";
 import styles from "./Stream.module.css";
+import MyVideoComponent, {PeerVideo} from "./MyVideoComponent";
 
-const Stream = ({ camEnabled, micEnabled, screenSharing, cameraHandler, audioHandler, screenShareHandler, disconnectHandler }) => {
+const Stream = ({
+    focussedOn,
+    setFocussedOn,
+    stream,
+    peers,
+    camEnabled,
+    micEnabled,
+    screenSharing,
+    cameraHandler,
+    audioHandler,
+    screenShareHandler,
+    disconnectHandler }) => {
 
   return (
         <div id={`${styles.stream__container}`}>
+            <div id={`${styles.stream__box}`}>
+
+                    {focussedOn === -1 ? (
+                        <video autoPlay muted ref={stream} />
+                    ):(<PeerVideo stream={peers[focussedOn].remoteStream} focussedOn={focussedOn} setFocussedOn={setFocussedOn} index={focussedOn} style={"noStyle"}/>)}
+
+            </div>
+            <div id={`${styles.streams__container}`}>
+                <MyVideoComponent stream={stream} peers={peers} focussedOn={focussedOn} setFocussedOn={setFocussedOn}/>
+            </div>
             <div className={`${styles.stream__actions}`}>
                 <button className={camEnabled ? `${styles.active}` : ""} onClick={cameraHandler}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M5 4h-3v-1h3v1zm10.93 0l.812 1.219c.743 1.115 1.987 1.781 3.328 1.781h1.93v13h-20v-13h3.93c1.341 0 2.585-.666 3.328-1.781l.812-1.219h5.86zm1.07-2h-8l-1.406 2.109c-.371.557-.995.891-1.664.891h-5.93v17h24v-17h-3.93c-.669 0-1.293-.334-1.664-.891l-1.406-2.109zm-11 8c0-.552-.447-1-1-1s-1 .448-1 1 .447 1 1 1 1-.448 1-1zm7 0c1.654 0 3 1.346 3 3s-1.346 3-3 3-3-1.346-3-3 1.346-3 3-3zm0-2c-2.761 0-5 2.239-5 5s2.239 5 5 5 5-2.239 5-5-2.239-5-5-5z"/></svg>
