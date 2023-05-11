@@ -14,59 +14,38 @@ const defaultScreenCaptureContraints = {
     video: {
         displaySurface: "browser"
     } as MediaTrackSettings,
-    audio: true
+    audio: true,
+    cursor: true,
 }
 
 export function useMediaDevices() {
-    const userStreamRef = useRef<MediaStream>(null);
-    const userScreenCapture = useRef<MediaStream>(null);
+    const userStream = useRef<MediaStream>(null);
+    const userScreenShare = useRef<MediaStream>(null);
+    const camTrack = useRef<MediaStreamTrack>(null);
 
-    const [isLoadingStream, setIsLoadingStream] = useState(false);
+    const [loadedDeviceList, setLoadedDeviceList] = useState(false);
+    const [loadedStream, setLoadedStream] = useState(false);
+    const [tracksChanged, setTracksChanged] = useState(false);
 
     const audioInList = useRef<DeviceInfo[]>([]);
-    const [audioIn, setAudioIn] = useState<string>("");
-
     const audioOutList = useRef<DeviceInfo[]>([]);
-    const [audioOut, setAudioOut] = useState<string>("");
-
     const cameraList = useRef<DeviceInfo[]>([]);
+
+    const [audioIn, setAudioIn] = useState<string>("");
+    const [audioOut, setAudioOut] = useState<string>("");
     const [camera, setCamera] = useState<string>("");
 
     const vidStreamConstraints = useRef<MediaStreamConstraints>(defaultVidStreamConstraints)
     const screenCaptureContraints = useRef<MediaStreamConstraints>(defaultScreenCaptureContraints);
 
     useEffect(() => {
-        setIsLoadingStream(true)
-        initMediaDevices().then(() => {
-            setIsLoadingStream(false);
-        });
-        return () => {
-            if (userStreamRef.current) {
-                userStreamRef.current.getTracks().forEach(track => track.stop());
-            }
+        initStream();
+    }, [camera, audioIn]);
+
+    async function initStream() {
+        if (!loadedDeviceList) {
+            await initMediaDevices();
         }
-    }, []);
-
-    useEffect(() => {
-        const prevConstrains = vidStreamConstraints.current;
-        getUserConstraints(audioIn, camera);
-        if (vidStreamConstraints.current === prevConstrains) {
-            return;
-        }
-
-        setIsLoadingStream(true)
-        getUserStream().then(() => {
-            setIsLoadingStream(false);
-        });
-
-        return () => {
-            if (userStreamRef.current) {
-                userStreamRef.current.getTracks().forEach(track => track.stop());
-            }
-        }
-    }, [audioIn, camera]);
-
-    function getUserConstraints(audioIn: string, camera: string) {
         if (!audioIn && !camera) {
             vidStreamConstraints.current = defaultVidStreamConstraints;
         } else {
@@ -75,6 +54,8 @@ export function useMediaDevices() {
                 video: {deviceId: camera ? {exact: camera} : undefined}
             };
         }
+        await getUserStream()
+        setLoadedStream(true);
     }
 
     async function initMediaDevices() {
@@ -104,72 +85,81 @@ export function useMediaDevices() {
         setAudioIn(audioInList.current[0]?.id);
         setAudioOut(audioOutList.current[0]?.id);
         setCamera(cameraList.current[0]?.id);
-
-        getUserConstraints(audioInList.current[0]?.id, cameraList.current[0]?.id);
-        await getUserStream()
+        setLoadedDeviceList(true);
     }
-
-    function changeAudioOut(videoElement: any) {
-        if (typeof videoElement.sinkId !== 'undefined') {
-            videoElement.setSinkId(audioOut)
-            .then(() => {
-                console.log(`Success, audio output device attached: ${audioOut}`);
-            })
-        } else {
-            console.warn('Browser does not support output device selection.');
-        }
-    }
+    //
+    // function changeAudioOut(videoElement: any) {
+    //     if (typeof videoElement.sinkId !== 'undefined') {
+    //         videoElement.setSinkId(audioOut)
+    //         .then(() => {
+    //             console.log(`Success, audio output device attached: ${audioOut}`);
+    //         })
+    //     } else {
+    //         console.warn('Browser does not support output device selection.');
+    //     }
+    // }
 
     async function getUserStream() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia(vidStreamConstraints.current)
-            if (!userStreamRef.current) {
-                userStreamRef.current = stream;
+            camTrack.current = stream.getTracks().find((track) => track.kind === "video");
+            if (!userStream.current) {
+                userStream.current = stream;
                 return;
             }
-            const tracks = userStreamRef.current.getTracks();
-            const videoTrack = tracks.find((track) => track.kind === "video");
-            const audioTrack = tracks.find((track) => track.kind === "audio");
-            userStreamRef.current.removeTrack(videoTrack);
-            userStreamRef.current.removeTrack(audioTrack);
-            stream.getTracks().forEach((track) => userStreamRef.current.addTrack(track));
-            //vidStreamConstraints = {audio: true, video: true}
+            userStream.current.getTracks().forEach((track) => {
+                userStream.current.removeTrack(track);
+            });
+            stream.getTracks().forEach((track) => {
+                userStream.current.addTrack(track)
+            });
+            setTracksChanged(true);
         } catch (err) {
-            console.log(err);
+            if (!userStream.current) {
+                userStream.current = new MediaStream();
+            }
         }
     }
 
-    async function initScreenCapture() {
+    async function startScreenShare(screenShareCleanup: () => void) {
         try {
-            userScreenCapture.current = await navigator.mediaDevices.getDisplayMedia(screenCaptureContraints.current)
+            userScreenShare.current = await navigator.mediaDevices.getDisplayMedia(screenCaptureContraints.current)
+            userStream.current.removeTrack(camTrack.current);
+            const captureVideoTrack = userScreenShare.current.getTracks().find((track) => track.kind === "video");
+            captureVideoTrack.onended = () => {
+                stopScreenShare();
+                screenShareCleanup();
+            }
+            userStream.current.addTrack(captureVideoTrack);
+            setTracksChanged(true);
         } catch (err) {
             console.log(err);
         }
     }
 
-    function test_media_dev() {
-        console.log("Audio in List: ", audioInList.current);
-        console.log("Audio out List: ", audioOutList.current);
-        console.log("Camera List: ", cameraList.current);
-
-        console.log("Selected Audio in: ", audioIn)
-        console.log("Selected Audio out: ", audioOut)
-        console.log("Selected Camera: ", camera)
+    function stopScreenShare() {
+        const captureVideoTrack = userScreenShare.current.getTracks().find((track) => track.kind === "video");
+        userStream.current.removeTrack(captureVideoTrack);
+        userScreenShare.current.getTracks()?.forEach((track) => track.stop());
+        userStream.current.addTrack(camTrack.current);
+        setTracksChanged(true);
     }
 
     return {
         initMediaDevices,
-        isLoadingStream,
-        userStreamRef,
-        userScreenCapture,
-        initScreenCapture,
+        loadedStream,
+        userStream,
+        userScreenShare,
+        startScreenShare,
+        stopScreenShare,
+        tracksChanged,
+        setTracksChanged,
+        cameraList,
         audioInList,
-        setAudioIn,
         audioOutList,
-        changeAudioOut,
+        setAudioIn,
         setCamera,
-        test_media_dev,
-        cameraList
+        // changeAudioOut,
     };
 }
 

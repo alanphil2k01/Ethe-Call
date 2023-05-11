@@ -37,33 +37,36 @@ const Room = ({ params }) => {
     const userVideoRef = useRef<HTMLVideoElement>();
     const peersRef = useRef<Peer[]>([]);
     const { id: roomID } = params;
-    const socketCreated = useRef(false)
-    const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents>>();
+    const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents>>(null);
     const userData = useRef<UserData>(null);
     const [chatMsgs, setChatMsgs] = useState<MessageContent[]>([]);
     const chatInputRef = useRef<HTMLInputElement>()
-    const [camEnabled, setCamEnabled] = useState(true);
-    const [micEnabled, setMicEnabled] = useState(true);
+    const [camEnabled, setCamEnabled] = useState(false);
+    const [micEnabled, setMicEnabled] = useState(false);
+    const [screenSharing, setScreenSharing] = useState(false);
 
     const { uploadFiles } = useFileUpload();
 
     const {
-        isLoadingStream,
-        userStreamRef,
+        userStream,
+        loadedStream,
+        startScreenShare,
+        stopScreenShare,
+        cameraList,
         audioInList,
         audioOutList,
-        cameraList,
         setAudioIn,
         setCamera,
+        tracksChanged,
+        setTracksChanged,
     } = useMediaDevices();
 
     const router = useRouter();
     const { certificates } = useContext(Fingerprint);
-    const { loadedWeb3, signer, message, sign, displayName, roomExists, isAdmitted, verifyPeer } = useContext(Blockchain);
+    const { loadedWeb3, signer, message, sign,  displayName, roomExists, isAdmitted, verifyPeer } = useContext(Blockchain);
 
     function getSocket(url: string) {
         socketRef.current = io(url)
-        socketCreated.current = true
         console.log("Joining Room");
         socketRef.current.emit("join room", roomID, userData.current);
         socketRef.current.on("all users", (users) => {
@@ -76,17 +79,17 @@ const Room = ({ params }) => {
         })
         socketRef.current.on("user joined", (offer, peerData) => {
             console.log("user joined");
-            const peer = addPeer(offer, peerData, userStreamRef.current);
+            const peer = addPeer(offer, peerData, userStream.current);
             peersRef.current.push(peer)
             setPeers(users => [...users, peer]);
         });
         socketRef.current.on("receiving returned answer", (answer, returnAddr) => {
             const peer = peersRef.current.find((peer) => peer.peerData.address === returnAddr);
-            verifyPeer(answer, peer.peerData).then((validUser) => {
-                if (!validUser) {
-                    peer.pc.close();
-                }
-            });
+            // verifyPeer(answer, peer.peerData).then((validUser) => {
+            //     if (!validUser) {
+            //         peer.pc.close();
+            //     }
+            // });
             console.log("Receiving returned answer");
             peer.setRemoteSDP(answer);
         });
@@ -129,9 +132,11 @@ const Room = ({ params }) => {
     }
 
     async function initUserData() {
+        const rando =(Math.random() + 1).toString(36).substring(7);
         userData.current = {
-            address: signer.address,
-            displayName: displayName,
+            // address: signer.address,
+            address: rando,
+            displayName,
             message: message,
             sign: sign,
         }
@@ -139,23 +144,41 @@ const Room = ({ params }) => {
 
     useEffect(() => {
         //verifyUser();
+        if (!loadedStream) {
+            return;
+        }
         initUserData().then(() => {
-            if (userStreamRef.current && !isLoadingStream) {
-                userVideoRef.current.srcObject = userStreamRef.current;
-                userVideoRef.current.onloadedmetadata = () => {
-                    userVideoRef.current.play();
-                };
-            }
-            if (!userStreamRef.current || socketCreated.current) {
-                return;
-            }
-            fetch("/api/socket2")
-            .then(() => {
-                    getSocket("");
+            userStream.current.getTracks().forEach((track) => {
+                if (track.kind === "video") {
+                    setCamEnabled(track.enabled);
+                    return;
+                }
+                if (track.kind === "audio") {
+                    setMicEnabled(track.enabled);
+                    return;
+                }
             });
+            userVideoRef.current.srcObject = userStream.current;
+            userVideoRef.current.onloadedmetadata = () => {
+                userVideoRef.current.play();
+            };
+            if (!socketRef.current) {
+                fetch("/api/socket2")
+                .then(() => {
+                        getSocket("");
+                        });
+            }
         });
 
-    }, [isLoadingStream]);
+    }, [loadedStream]);
+
+    useEffect(() => {
+        if (tracksChanged) {
+            console.log("Updating Tracks");
+            peersRef.current.forEach((peer) => peer.updateStream(userStream.current));
+            setTracksChanged(false);
+        }
+    }, [tracksChanged]);
 
     function iceHandler(event: RTCPeerConnectionIceEvent) {
         if (event.candidate) {
@@ -164,13 +187,36 @@ const Room = ({ params }) => {
     }
 
     function dcMessageHandler(event: MessageEvent) {
-        const msg = JSON.parse(event.data);
+        const msg = JSON.parse(event.data) as MessageContent;
         setChatMsgs(prevChats => [...prevChats, msg]);
+    }
+
+    function sendDcMsgToAllPeers(msg: MessageContent) {
+        peers.forEach(peer => {
+            if (peer.dcReady) {
+                peer.dc.send(JSON.stringify(msg));
+            } else {
+                console.log("Peer dc is not ready");
+            }
+        })
+        if (msg.type === MessageType.CHAT || msg.type === MessageType.FILE) {
+            setChatMsgs(prevChats => [...prevChats, { ...msg, author: "you" }]);
+        }
+    }
+
+    async function screenShareHandler() {
+        if (!screenSharing) {
+            await startScreenShare(() => setScreenSharing(false));
+            setScreenSharing(true);
+        } else {
+            stopScreenShare();
+            setScreenSharing(false);
+        }
     }
 
     function createPeer(peerData: UserData) {
         const peer = new Peer({
-            stream: userStreamRef.current,
+            stream: userStream.current,
             initiator: true,
             certificates,
             peerData,
@@ -203,11 +249,11 @@ const Room = ({ params }) => {
             peerData,
         })
 
-        verifyPeer(offer, peerData).then((validUser) => {
-            if (!validUser) {
-                peer.pc.close();
-            }
-        });
+        // verifyPeer(offer, peerData).then((validUser) => {
+        //     if (!validUser) {
+        //         peer.pc.close();
+        //     }
+        // });
 
         peer.pc.ontrack = (event) => {
             console.log("Got Tracks: ", event.streams[0].getTracks());
@@ -224,17 +270,6 @@ const Room = ({ params }) => {
             socketRef.current.emit("return answer", answer, peerData.address)
         })
         return peer;
-    }
-
-    function sendDcMsgToAllPeers(msg: MessageContent) {
-        peers.forEach(peer => {
-            if (peer.dcReady) {
-                peer.dc.send(JSON.stringify(msg));
-            } else {
-                console.log("Peer dc is not ready");
-            }
-        })
-        setChatMsgs(prevChats => [...prevChats, { ...msg, author: "you" }]);
     }
 
     function sendChatMsg() {
@@ -256,9 +291,11 @@ const Room = ({ params }) => {
                         })
                     }} >Check Status</button>
                 */}
+                {/*
                 <section className={`${styles.members__container}`}>
                     <Members></Members>
                 </section>
+                */}
                 <section className={`${styles.stream__container}`}>
                     <MyVideoComponent stream={userVideoRef} peers={peers} />
 
@@ -275,8 +312,12 @@ const Room = ({ params }) => {
                             </Link>
                         </div>
                     </div> */}
-                    <Stream camEnabled={camEnabled} micEnabled={micEnabled} cameraHandler={ () => {
-                            userStreamRef.current.getTracks().forEach((track) => {
+                    <Stream
+                        camEnabled={camEnabled}
+                        micEnabled={micEnabled}
+                        screenSharing={screenSharing}
+                        cameraHandler={ () => {
+                            userStream.current.getTracks().forEach((track) => {
                                 if (track.kind === "video") {
                                     setCamEnabled((prev) => {
                                             track.enabled = !prev;
@@ -285,7 +326,7 @@ const Room = ({ params }) => {
                                 }
                             });
                         }} audioHandler={ () => {
-                            userStreamRef.current.getTracks().forEach((track) => {
+                            userStream.current.getTracks().forEach((track) => {
                                 if (track.kind === "audio") {
                                     setMicEnabled((prev) => {
                                             track.enabled = !prev;
@@ -293,13 +334,15 @@ const Room = ({ params }) => {
                                     });
                                 }
                             });
-                        }} disconnectHandler={() => {
+                        }} screenShareHandler={screenShareHandler} disconnectHandler={() => {
                             socketRef.current.disconnect();
                             router.push("/");
                         }}></Stream>
-                    {/* <DeviceList deviceList={audioInList.current} onChange={(e) => {setAudioIn(e.target.value)}} />
+                        {/*
+                        <DeviceList deviceList={cameraList.current} onChange={(e) => {setCamera(e.target.value)}} />
+                    <DeviceList deviceList={audioInList.current} onChange={(e) => {setAudioIn(e.target.value)}} />
                     <DeviceList deviceList={audioOutList.current} />
-                    <DeviceList deviceList={cameraList.current} onChange={(e) => {setCamera(e.target.value)}} /> */}
+                    */}
                 </section>
                 <section className={`${styles.messages__container}`}>
                     <Chat msgs={chatMsgs} chatInputRef={chatInputRef} sendChatMsg={sendChatMsg} onDrop={(event: DragEvent<HTMLDivElement>) => {

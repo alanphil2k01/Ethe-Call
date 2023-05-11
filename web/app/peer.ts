@@ -25,6 +25,7 @@ export class Peer {
     dcReady: boolean = false;
     remoteStream: MediaStream;
     peerData: UserData;
+    senders: RTCRtpSender[] = [];
 
     constructor(opts: Options) {
         this.certificates = opts.certificates;
@@ -62,33 +63,26 @@ export class Peer {
     addTracks() {
         if (this.userStream) {
             this.userStream.getTracks().forEach((track) => {
-                this.pc.addTrack(track, this.userStream);
+                const sender = this.pc.addTrack(track, this.userStream);
+                this.senders.push(sender);
             });
         }
     }
 
-    async toggleCamera(){
-        let videoTrack = this.userStream.getTracks().find(track => track.kind === 'video')
-
-        if(videoTrack.enabled){
-            videoTrack.enabled = false;
-            //style the button
-        }else{
-            videoTrack.enabled = true;
-            //style the button
-        }
+    swapStream(stream: MediaStream) {
+        this.senders.forEach((sender) => this.pc.removeTrack(sender));
+        this.userStream = stream;
+        this.addTracks();
     }
 
-    async toggleMic(){
-        let audioTrack = this.userStream.getTracks().find(track => track.kind === 'audio')
-
-        if(audioTrack.enabled){
-            audioTrack.enabled = false;
-            //style the button
-        }else{
-            audioTrack.enabled = true;
-            //style the button
-        }
+    updateStream(stream: MediaStream) {
+        this.userStream = stream;
+        this.senders.forEach((sender) => {
+            const track = this.userStream.getTracks().find((track) => track.kind === sender.track.kind);
+            if (track) {
+                sender.replaceTrack(track);
+            }
+        });
     }
 
     async createSDP(): Promise<RTCSessionDescription> {

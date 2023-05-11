@@ -25,7 +25,6 @@ const roomAdddrPairToSocket: { [key: string]: string } = {};
 
 const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
     if (res.socket.server.io) {
-        console.log('Socket is already attached');
         return res.end();
     }
 
