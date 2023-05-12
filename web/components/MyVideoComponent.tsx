@@ -1,10 +1,13 @@
 "use client";
 
-import { Dispatch, MutableRefObject, SetStateAction, useEffect, useRef } from "react";
+import { Dispatch, MouseEventHandler, MutableRefObject, SetStateAction, useEffect, useRef } from "react";
 import { Peer } from "@/app/peer";
 import styles from "./MyVideoComponent.module.css";
 
-export function PeerVideo ({ stream, focussedOn, setFocussedOn, index, style }: { stream: MediaStream, focussedOn: number, setFocussedOn: Dispatch<SetStateAction<number>>, index:number, style:string }) {
+export function PeerVideo ({ stream, style, onClick }: {
+    stream: MediaStream,
+    onClick?: MouseEventHandler<HTMLVideoElement>,
+   style:string }) {
     const peerVidRef = useRef<HTMLVideoElement>();
 
     useEffect(() => {
@@ -16,24 +19,22 @@ export function PeerVideo ({ stream, focussedOn, setFocussedOn, index, style }: 
         // </div>
       return style === 'regular' ? (<div className={`${styles.video__container}`}>
           <div className={`${styles.video__player}`}>
-              <video autoPlay onClick={()=>{setFocussedOn(index)}} ref={peerVidRef} />
+              <video autoPlay onClick={onClick} ref={peerVidRef} />
           </div>
         </div>):
-        (<video autoPlay onClick={()=>{setFocussedOn(index)}} ref={peerVidRef} />)
+        (<video autoPlay onClick={onClick} ref={peerVidRef} />)
 }
 
-const MyVideoComponent = ({ stream, peers, focussedOn, setFocussedOn }: { stream: MutableRefObject<HTMLVideoElement>, peers: Peer[], focussedOn: number, setFocussedOn: Dispatch<SetStateAction<number>>}) => {
+const MyVideoComponent = ({ userStream, peers, focussedOn, setFocussedOn }: { userStream: MutableRefObject<MediaStream>, peers: Peer[], focussedOn: number, setFocussedOn: Dispatch<SetStateAction<number>>}) => {
   return (
     <div id={`${styles.streams__container}`}>
-      { focussedOn !== -1 && <div className={`${styles.video__container}`}>
-        <div className={`${styles.video__player}`}>
-          <video autoPlay onClick={()=>{setFocussedOn(-1)}} muted ref={stream} />
-        </div>
-      </div>}
+      { focussedOn !== -1 && (
+        <PeerVideo stream={userStream.current} onClick={() => setFocussedOn(-1)} style="regular" />
+      )}
         {peers && peers.map((peer, index) => {
           return index !== focussedOn && (
             <div key={index}>
-              <PeerVideo stream={peer.remoteStream} focussedOn={focussedOn} setFocussedOn={setFocussedOn} index={index} style={'regular'}/>
+              <PeerVideo stream={peer.remoteStream} onClick={() => setFocussedOn(index)} style={'regular'}/>
             </div>
             )
         })}
@@ -42,3 +43,4 @@ const MyVideoComponent = ({ stream, peers, focussedOn, setFocussedOn }: { stream
 };
 
 export default MyVideoComponent;
+

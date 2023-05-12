@@ -5,7 +5,7 @@ import MyVideoComponent, {PeerVideo} from "./MyVideoComponent";
 const Stream = ({
     focussedOn,
     setFocussedOn,
-    stream,
+    userStream,
     peers,
     camEnabled,
     micEnabled,
@@ -20,12 +20,12 @@ const Stream = ({
             <div id={`${styles.stream__box}`}>
 
                     {focussedOn === -1 ? (
-                        <video autoPlay muted ref={stream} />
-                    ):(<PeerVideo stream={peers[focussedOn].remoteStream} focussedOn={focussedOn} setFocussedOn={setFocussedOn} index={focussedOn} style={"noStyle"}/>)}
+                       <PeerVideo stream={userStream.current} style={"noStyle"}/>
+                    ):(<PeerVideo stream={peers[focussedOn].remoteStream}  style={"noStyle"}/>)}
 
             </div>
             <div id={`${styles.streams__container}`}>
-                <MyVideoComponent stream={stream} peers={peers} focussedOn={focussedOn} setFocussedOn={setFocussedOn}/>
+                <MyVideoComponent userStream={userStream} peers={peers} focussedOn={focussedOn} setFocussedOn={setFocussedOn}/>
             </div>
             <div className={`${styles.stream__actions}`}>
                 <button className={camEnabled ? `${styles.active}` : ""} onClick={cameraHandler}>

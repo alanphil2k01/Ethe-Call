@@ -34,7 +34,6 @@ function DeviceList({ deviceList, onChange}: { deviceList: DeviceInfo[], onChang
 
 const Room = ({ params }) => {
     const [peers, setPeers] = useState<Peer[]>([]);
-    const userVideoRef = useRef<HTMLVideoElement>();
     const peersRef = useRef<Peer[]>([]);
     const { id: roomID } = params;
     const socketRef = useRef<Socket<ServerToClientEvents, ClientToServerEvents>>(null);
@@ -50,6 +49,7 @@ const Room = ({ params }) => {
 
     const {
         userStream,
+        camTrack,
         loadedStream,
         startScreenShare,
         stopScreenShare,
@@ -159,10 +159,6 @@ const Room = ({ params }) => {
                     return;
                 }
             });
-            userVideoRef.current.srcObject = userStream.current;
-            userVideoRef.current.onloadedmetadata = () => {
-                userVideoRef.current.play();
-            };
             if (!socketRef.current) {
                 fetch("/api/socket2")
                 .then(() => {
@@ -321,20 +317,18 @@ const Room = ({ params }) => {
                     <Stream
                         focussedOn={focussedOn}
                         setFocussedOn={setFocussedOn}
-                        stream={userVideoRef}
+                        userStream={userStream}
                         peers={peers}
                         camEnabled={camEnabled}
                         micEnabled={micEnabled}
                         screenSharing={screenSharing}
                         cameraHandler={ () => {
-                            userStream.current.getTracks().forEach((track) => {
-                                if (track.kind === "video") {
-                                    setCamEnabled((prev) => {
-                                            track.enabled = !prev;
-                                            return !prev;
-                                    });
-                                }
-                            });
+                            if (camTrack.current) {
+                                setCamEnabled((prev) => {
+                                        camTrack.current.enabled = !prev;
+                                        return !prev;
+                                        });
+                            }
                         }} audioHandler={ () => {
                             userStream.current.getTracks().forEach((track) => {
                                 if (track.kind === "audio") {
