@@ -3,18 +3,22 @@ import styles from './myNewNavbar.module.css';
 import WalletButton from '@/components/WalletButton';
 import Image from 'next/image';
 import Link from 'next/link';
+import logo from "@/images/logo.png";
 
 export default function MyNewNavbar({ children }: { children: ReactNode }){
     return (
         <main className={`${styles.main}`}>
             <header id={`${styles.nav}`}>
                 <div className={`${styles.nav__list}`}>
-                        <a href="lobby.html">
+                        <Link href="lobby.html">
                             <h3 id={`${styles.logo}`}>
-                                <Image src="" alt="Site Logo"/>
+                                <Image style={{
+                                    maxHeight: "3rem",
+                                    maxWidth: "3rem"
+                                }} src={logo} alt="Site Logo"/>
                                 <span>Ethe-Call</span>
                             </h3>
-                        </a>
+                        </Link>
                 </div>
 
                 <div id={`${styles.nav__links}`}>

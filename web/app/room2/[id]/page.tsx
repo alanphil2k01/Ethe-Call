@@ -102,6 +102,7 @@ const Room = ({ params }) => {
                 .catch((e) => console.log(e));
         });
         socketRef.current.on("user disconnected", (addr) => {
+            setFocussedOn(-1);
             peersRef.current = peersRef.current.filter((peer) => addr !== peer.peerData.address);
             setPeers([...peersRef.current]);
         });

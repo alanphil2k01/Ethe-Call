@@ -11,8 +11,8 @@ export default function Members(props){
 
             <div id={`${styles.member__list}`}>
                 <Member name="You"></Member>
-                {props.peers.map((peer)=>{
-                    return (<Member name={peer.peerData.displayName}/>)
+                {props.peers.map((peer, idx)=>{
+                    return (<Member key={idx} name={peer.peerData.displayName}/>)
                 })}
             </div>
         </div>
