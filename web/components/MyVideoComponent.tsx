@@ -19,10 +19,10 @@ export function PeerVideo ({ stream, style, onClick }: {
         // </div>
       return style === 'regular' ? (<div className={`${styles.video__container}`}>
           <div className={`${styles.video__player}`}>
-              <video style={{minHeight: "100%", minWidth: "100%"}} autoPlay onClick={onClick} ref={peerVidRef} />
+              <video autoPlay onClick={onClick} ref={peerVidRef} />
           </div>
         </div>):
-        (<video autoPlay onClick={onClick} ref={peerVidRef} />)
+        (<video muted style={{height: "100%", width: "100%"}} autoPlay onClick={onClick} ref={peerVidRef} />)
 }
 
 const MyVideoComponent = ({ userStream, peers, focussedOn, setFocussedOn }: { userStream: MutableRefObject<MediaStream>, peers: Peer[], focussedOn: number, setFocussedOn: Dispatch<SetStateAction<number>>}) => {

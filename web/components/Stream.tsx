@@ -24,6 +24,7 @@ const Stream = ({
                     ):(<PeerVideo stream={peers[focussedOn].remoteStream}  style={"noStyle"}/>)}
 
             </div>
+            </div>
             <div id={`${styles.streams__container}`}>
                 <MyVideoComponent userStream={userStream} peers={peers} focussedOn={focussedOn} setFocussedOn={setFocussedOn}/>
             </div>
@@ -45,7 +46,6 @@ const Stream = ({
                 </button> */}
             </div>
         </div>
-     </div>
     );
 };
 

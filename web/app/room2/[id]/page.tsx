@@ -134,7 +134,7 @@ const Room = ({ params }) => {
     }
 
     async function initUserData() {
-        const rando =(Math.random() + 1).toString(36).substring(7);
+        // const rando =(Math.random() + 1).toString(36).substring(7);
         userData.current = {
             address: signer.address,
             // address: rando,
@@ -145,7 +145,7 @@ const Room = ({ params }) => {
     }
 
     useEffect(() => {
-        //verifyUser();
+        verifyUser();
         if (!loadedStream) {
             return;
         }
@@ -293,11 +293,11 @@ const Room = ({ params }) => {
                         })
                     }} >Check Status</button>
                 */}
-                
+
                 <section className={`${styles.members__container}`}>
                     <Members peers={peers}></Members>
                 </section>
-               
+
                 <section className={`${styles.stream__container}`}>
                     {/*<div className={`${styles.stream__box}`}>
                         <MyVideoComponent stream={userVideoRef} peers={peers} />
