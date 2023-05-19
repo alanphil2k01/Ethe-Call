@@ -83,7 +83,7 @@ export default function Home() {
                   </div>
 
                   <div className={`${styles.form__field__wrapper}`}>
-                  <label style={{textAlign: 'center'}}><p>Your Name</p></label>
+                  <label><p>Your Name</p></label>
                   <div style={{display:"flex", flexDirection: "row", gap: "1em", alignItems: "baseline", boxSizing: "border-box", padding: "0px"}}>
                     <input type="text" ref={nicknameRef} name="name" placeholder={displayName} />
                     <button onClick={set} style={{boxSizing: "border-box"}}>Set Nickname

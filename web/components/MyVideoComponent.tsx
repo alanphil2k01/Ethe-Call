@@ -19,7 +19,7 @@ export function PeerVideo ({ stream, style, onClick }: {
         // </div>
       return style === 'regular' ? (<div className={`${styles.video__container}`}>
           <div className={`${styles.video__player}`}>
-              <video autoPlay onClick={onClick} ref={peerVidRef} />
+              <video style={{minHeight: "100%", minWidth: "100%"}} autoPlay onClick={onClick} ref={peerVidRef} />
           </div>
         </div>):
         (<video autoPlay onClick={onClick} ref={peerVidRef} />)

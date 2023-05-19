@@ -9,12 +9,12 @@ export default function MyNewNavbar({ children }: { children: ReactNode }){
         <main className={`${styles.main}`}>
             <header id={`${styles.nav}`}>
                 <div className={`${styles.nav__list}`}>
-                        <a href="lobby.html">
+                        <Link href="/">
                             <h3 id={`${styles.logo}`}>
                                 <Image src="" alt="Site Logo"/>
                                 <span>Ethe-Call</span>
                             </h3>
-                        </a>
+                        </Link>
                 </div>
 
                 <div id={`${styles.nav__links}`}>
