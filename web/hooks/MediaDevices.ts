@@ -51,7 +51,10 @@ export function useMediaDevices() {
         } else {
             vidStreamConstraints.current = {
                 audio: {deviceId: audioIn ? {exact: audioIn} : undefined},
-                video: {deviceId: camera ? {exact: camera} : undefined}
+                video: {deviceId: camera ? {exact: camera} : undefined,
+                        width: {min: 1280, ideal: 1920, max: 1920},
+                        height: {min: 720, ideal: 1080, max: 1080}
+                },
             };
         }
         await getUserStream()

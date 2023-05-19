@@ -86,11 +86,11 @@ const Room = ({ params }) => {
         });
         socketRef.current.on("receiving returned answer", (answer, returnAddr) => {
             const peer = peersRef.current.find((peer) => peer.peerData.address === returnAddr);
-            // verifyPeer(answer, peer.peerData).then((validUser) => {
-            //     if (!validUser) {
-            //         peer.pc.close();
-            //     }
-            // });
+            verifyPeer(answer, peer.peerData).then((validUser) => {
+                if (!validUser) {
+                    peer.pc.close();
+                }
+            });
             console.log("Receiving returned answer");
             peer.setRemoteSDP(answer);
         });
@@ -136,8 +136,8 @@ const Room = ({ params }) => {
     async function initUserData() {
         const rando =(Math.random() + 1).toString(36).substring(7);
         userData.current = {
-            // address: signer.address,
-            address: rando,
+            address: signer.address,
+            // address: rando,
             displayName,
             message: message,
             sign: sign,
@@ -247,11 +247,11 @@ const Room = ({ params }) => {
             peerData,
         })
 
-        // verifyPeer(offer, peerData).then((validUser) => {
-        //     if (!validUser) {
-        //         peer.pc.close();
-        //     }
-        // });
+        verifyPeer(offer, peerData).then((validUser) => {
+            if (!validUser) {
+                peer.pc.close();
+            }
+        });
 
         peer.pc.ontrack = (event) => {
             console.log("Got Tracks: ", event.streams[0].getTracks());
@@ -293,11 +293,11 @@ const Room = ({ params }) => {
                         })
                     }} >Check Status</button>
                 */}
-                {/*
+                
                 <section className={`${styles.members__container}`}>
                     <Members peers={peers}></Members>
                 </section>
-                */}
+               
                 <section className={`${styles.stream__container}`}>
                     {/*<div className={`${styles.stream__box}`}>
                         <MyVideoComponent stream={userVideoRef} peers={peers} />

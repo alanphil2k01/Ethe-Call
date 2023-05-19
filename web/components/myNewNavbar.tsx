@@ -10,7 +10,7 @@ export default function MyNewNavbar({ children }: { children: ReactNode }){
         <main className={`${styles.main}`}>
             <header id={`${styles.nav}`}>
                 <div className={`${styles.nav__list}`}>
-                        <Link href="lobby.html">
+                        <Link href="/">
                             <h3 id={`${styles.logo}`}>
                                 <Image style={{
                                     maxHeight: "3rem",

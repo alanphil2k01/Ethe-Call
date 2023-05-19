@@ -6,6 +6,7 @@ import { Blockchain } from "@/app/blockchain";
 import { useContext } from 'react';
 import { ZeroAddress, isAddress } from 'ethers';
 import { useRouter } from 'next/navigation';
+import { Fingerprint } from '../fingerprint';
 
 export default function users() {
     const router = useRouter();
@@ -37,7 +38,7 @@ export default function users() {
   };
 
     const options = [];
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 10; i++) {
         options.push(
             <option key={i} value={i}>
                 {i}
@@ -45,6 +46,7 @@ export default function users() {
         );
     }
 
+    const {certificates} = useContext(Fingerprint);
     async function createRoom() {
         if (!loadedWeb3) {
             alert("Please connect your Meteamask Wallet");
@@ -81,7 +83,12 @@ export default function users() {
         console.log(userList);
         console.log(adminList);
         if ((await newCallWithUsers(roomID, userList, adminList))) {
-                router.push(`/room2/${roomID}`);
+                if(certificates.length === 0){
+                    alert("Room created successfully. Redirecting to home");
+                    router.push('/');
+                }else{
+                    router.push(`/room2/${roomID}`);
+                }    
         }
 
     }
@@ -113,7 +120,7 @@ export default function users() {
                     <input placeholder="Room ID" required type="text" onChange={(event) => setRoomId(event.target.value)} />
                     <span style={{display: "flex", flexDirection: "row"}}>
                         <label htmlFor="number">Select number of users in the call: </label>
-                        <select className="select" id="number" value={selectedNumber} onChange={handleChange}>
+                        <select className="select" id="number" value={selectedNumber} onChange={handleChange} style={{backgroundColor: '#3f434a', marginTop: 10,height: "1.7em", width: 50}}>
                             {options}
                         </select>
                     </span>
