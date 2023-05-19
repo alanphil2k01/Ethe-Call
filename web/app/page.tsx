@@ -82,6 +82,22 @@ export default function Home() {
                     </button>
                   </div>
 
+                  <div className={`${styles.form__field__wrapper}`}>
+                  <label style={{textAlign: 'center'}}><p>Your Name</p></label>
+                  <div style={{display:"flex", flexDirection: "row", gap: "1em", alignItems: "baseline", boxSizing: "border-box", padding: "0px"}}>
+                    <input type="text" ref={nicknameRef} name="name" placeholder={displayName} />
+                    <button onClick={set} style={{boxSizing: "border-box"}}>Set Nickname
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div className={`${styles.form__field__wrapper}`}>
+                  <button type="submit" onClick={createRoom}>Create room for later
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
+                  </button>
+                </div>
+
                   {/* <div className={`${styles.form__field__wrapper}`}>
 
                   </div> */}
@@ -114,15 +130,6 @@ export default function Home() {
 
 
               <form id={`${styles.lobby__form}`} onSubmit={(event) => {event.preventDefault()}}>
-                <div className={`${styles.form__field__wrapper}`}>
-                  <label>Your Name</label>
-                  <div style={{display:"flex", flexDirection: "row", gap: "1em", alignItems: "baseline", boxSizing: "border-box", padding: "0px"}}>
-                    <input type="text" ref={nicknameRef} name="name" placeholder={displayName} />
-                    <button onClick={set} style={{boxSizing: "border-box"}}>Set Nickname
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
-                    </button>
-                  </div>
-                </div>
 
                 <div className={`${styles.form__field__wrapper}`}>
                   <label>Room Name</label>
@@ -133,7 +140,7 @@ export default function Home() {
                   <button type="submit" onClick={joinRoom}>Join room
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
                   </button>
-                  <label>Or</label>
+                  <label style={{textAlign: 'center', marginTop:30}}><p>Or</p></label>
                   <button type="submit" onClick={createRoom}>Create room
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
                   </button>

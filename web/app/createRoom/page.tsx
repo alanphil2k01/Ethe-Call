@@ -113,7 +113,7 @@ export default function users() {
                     <input placeholder="Room ID" required type="text" onChange={(event) => setRoomId(event.target.value)} />
                     <span style={{display: "flex", flexDirection: "row"}}>
                         <label htmlFor="number">Select number of users in the call: </label>
-                        <select className="select" id="number" value={selectedNumber} onChange={handleChange}>
+                        <select className="select" id="number" value={selectedNumber} onChange={handleChange} style={{backgroundColor: '#3f434a', marginTop: 10,height: "1.7em", width: 50}}>
                             {options}
                         </select>
                     </span>

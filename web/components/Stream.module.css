@@ -22,13 +22,14 @@
   background-color: #3f434a;
   height: 60vh;
   display: flex;
+  justify-content: center;
 }
 
 #stream__box .video__container{
   border: 2px solid #000;
   border-radius: 0;
-  height: 100%!important;
-  width:100%!important;
+  height: 100%;
+  width:100%;
 
   background-size: 300px;
 }

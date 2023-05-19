@@ -18,11 +18,11 @@ const Stream = ({
   return (
         <div id={`${styles.stream__container}`}>
             <div id={`${styles.stream__box}`}>
-
+                <div id={`${styles.video__container}`}>
                     {focussedOn === -1 ? (
                         <video autoPlay muted ref={stream} />
-                    ):(<PeerVideo stream={peers[focussedOn].remoteStream} focussedOn={focussedOn} setFocussedOn={setFocussedOn} index={focussedOn} style={"noStyle"}/>)}
-
+                        ):(<PeerVideo stream={peers[focussedOn].remoteStream} focussedOn={focussedOn} setFocussedOn={setFocussedOn} index={focussedOn} style={"noStyle"}/>)}
+                </div>
             </div>
             <div id={`${styles.streams__container}`}>
                 <MyVideoComponent stream={stream} peers={peers} focussedOn={focussedOn} setFocussedOn={setFocussedOn}/>
