@@ -150,6 +150,7 @@ export function useMediaDevices() {
         loadedStream,
         userStream,
         userScreenShare,
+        camTrack,
         startScreenShare,
         stopScreenShare,
         tracksChanged,

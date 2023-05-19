@@ -80,7 +80,7 @@ const SocketHandler = (_: NextApiRequest, res: NextApiResponseWithSocket) => {
 
         socket.on('disconnect', () => {
             const roomID = socketToRoom[socket.id];
-            users[roomID] = users[roomID]?.filter(user => user.socketID !== socket.id);
+            users[roomID] = users[roomID].filter(user => user.socketID !== socket.id);
             users[roomID].forEach((user) => {
                 io.to(user.socketID).emit("user disconnected", socket.data.userData.address);
             });
