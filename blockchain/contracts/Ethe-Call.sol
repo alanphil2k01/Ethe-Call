@@ -49,6 +49,8 @@ contract EtheCall {
 
     function setNickname(string memory nickname) public {
         require(NicknamesToUser[nickname] == address(0), "Nickname already in use");
+        string memory _prevNickName = UserToNickname[msg.sender];
+        NicknamesToUser[_prevNickName] = address(0);
         NicknamesToUser[nickname] = msg.sender;
         UserToNickname[msg.sender] = nickname;
         emit setNicknameEvent(msg.sender, nickname);

@@ -1,9 +1,8 @@
 import './globals.css'
 import  { BlockchainProvider } from "./blockchain";
-import Navbar from '@/components/navbar';
 import { FingerprintProvider } from './fingerprint';
 import MyNewNavbar from '@/components/myNewNavbar';
-
+import ToastWrapper from "@/components/toastWrapper";
 
 export default function RootLayout({
   children,
@@ -18,6 +17,7 @@ export default function RootLayout({
       */}
       <head />
       <body className='bg-[#1a1a1a]'>
+        <ToastWrapper />
         <BlockchainProvider>
             <FingerprintProvider>
                 <MyNewNavbar>

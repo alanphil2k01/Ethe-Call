@@ -6,6 +6,7 @@ import { BrowserProvider, Contract, JsonRpcSigner, SignatureLike, ZeroAddress, v
 import { ReactNode, createContext, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
 import { UserData } from "@/types/socket";
+import { toast } from "react-toastify";
 
 declare global {
   interface Window{
@@ -61,12 +62,6 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
     const [loading, isLoading] = useState(false);
     const [loadedWeb3, setLoadedWeb3] = useState(false);
 
-    // window.ethereum.on('accountsChanged', (accounts) => {
-    //     console.log("Running reconnect");
-    //     console.log("Connecting to new account " + accounts[0]);
-    //     connectMetaMask();
-    // });
-
     async function loadWeb3() {
         const provider = new BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
@@ -96,10 +91,25 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
     function connectMetaMask() {
         isLoading(true);
         if (window.ethereum == null) {
-            alert("Please install metamask");
+            toast.warn("Pleases install MetaMask", {
+                position: "bottom-left",
+                autoClose: 1000,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: false,
+                theme: "dark",
+            });
         } else {
-            loadWeb3()
-            .then(() => setLoadedWeb3(true));
+            toast.promise(
+                loadWeb3,
+                {
+                      pending: 'Connecting to MetaMask',
+                      success: 'Connected to MetaMask',
+                      error: "Couldn't Connect to MetaMask"
+                    }
+            ).then(() => {
+                setLoadedWeb3(true);
+            });
         }
         isLoading(false);
     }
@@ -108,6 +118,7 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
         try {
             const tx = await contract.setFingerprint(fingerprint);
             await tx.wait();
+            toast.success("Successfully Generated Certificates");
         } catch (err) {
             alertErr(err);
         }
@@ -117,6 +128,7 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
         try {
             const tx = await contract.setNickname(nickname);
             await tx.wait();
+            toast.success("Successfully Set Nickname");
         } catch (err) {
             alertErr(err);
         }
@@ -251,9 +263,23 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
 
 function alertErr(err: any) {
     if (err.reason) {
-        alert(err.reason);
+        toast.error(err.reason, {
+            position: "bottom-left",
+            autoClose: 1000,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: false,
+            theme: "dark",
+        });
     } else {
-        alert("Something went wrong");
+        toast.error("Something went wrong", {
+            position: "bottom-left",
+            autoClose: 1000,
+            closeOnClick: false,
+            pauseOnHover: true,
+            draggable: false,
+            theme: "dark",
+        });
         console.log(err);
         throw err;
     }

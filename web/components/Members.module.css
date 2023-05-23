@@ -20,7 +20,7 @@
     font-weight: 600;
     border-radius: 5px;
 }
-  
+
 #members__header {
     display: flex;
     justify-content: space-around;
@@ -31,7 +31,7 @@
     background-color: #323143;
     width: 250px;
 }
-  
+
 #member__list {
     display: flex;
     flex-direction: column;
@@ -39,8 +39,19 @@
     padding-top: 5rem;
     padding-bottom: 6.5rem;
 }
-  
+
 #members__list::-webkit-scrollbar {
     height: 14px;
     width: 7px;
+}
+
+#closeBtn svg {
+    height: 1rem;
+    fill: #ffffff;
+}
+
+@media (min-width: 1200px) {
+    #closeBtn {
+        display: none;
+    }
 }

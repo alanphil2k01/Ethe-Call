@@ -9,43 +9,51 @@
 }
 
 #stream__container {
-  justify-self: center;
-  width: calc(100% - 40.7rem);
-  position: fixed;
-  left: 15.7rem;
-  top: clac(100vh - 72px);
-  overflow-y: auto;
-  height: 100%;
+    justify-self: center;
+    width: calc(100% - 40.7rem);
+    position: fixed;
+    left: 15.7rem;
+    top: clac(100vh - 72px);
+    overflow-y: auto;
+    height: 100%;
+    background-color: #1a1a1a;
+}
+
+@media (max-width: 1200px) {
+    #stream__container {
+        width: 100%;
+        left: 0;
+    }
 }
 
 #stream__box{
-  background-color: #3f434a;
-  height: 60vh;
-  display: flex;
-  justify-content: center;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    display: flex;
+    justify-content: center;
 }
 
 #stream__box .video__container{
-  border: 2px solid #000;
-  border-radius: 0;
-  height: 100%;
-  width:100%;
+    border: 2px solid #000;
+    border-radius: 0;
+    height: 100%;
+    width:100%;
 
-  background-size: 300px;
+    background-size: 300px;
 }
 
 #stream__box video{
-  border-radius: 0;
+    border-radius: 0;
 }
 
 #streams__container{
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2em;
-  justify-content: center;
-  align-items: center;
-  margin-top: 25px;
-  margin-bottom: 225px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2em;
+    justify-content: center;
+    align-items: center;
+    margin-top: 25px;
+    margin-bottom: 225px;
 }
 
 .stream__actions {
@@ -57,11 +65,19 @@
     left: 50%;
     display: flex;
     gap: 1rem;
+    flex-wrap: wrap;
+    width: 100vw;
+    justify-content: center;
     transform: translateX(-50%);
-  }
-  
-  .stream__actions a,
-  .stream__actions button {
+}
+
+@media (min-width: 1200px) {
+    .stream__actions {
+        padding-right: 180px;
+    }
+}
+.stream__actions a,
+.stream__actions button {
     cursor: pointer;
     background-color: #262625;
     color: #fff;
@@ -72,23 +88,23 @@
     padding: 0.5rem 1rem;
     border-radius: 5px;
     transition: all 0.2s ease-in-out;
-  }
-  
-  .stream__actions a svg,
-  .stream__actions button svg {
+}
+
+.stream__actions a svg,
+.stream__actions button svg {
     width: 1.5rem;
     height: 1.5rem;
     fill: #ede0e0;
-  }
-  
-  .stream__actions a.active,
-  .stream__actions button.active,
-  .stream__actions a:hover,
-  .stream__actions button:hover {
-    background-color: #845695;
-  }
+}
 
-  .video__container{
+.stream__actions a.active,
+.stream__actions button.active,
+.stream__actions a:hover,
+.stream__actions button:hover {
+    background-color: #845695;
+}
+
+.video__container{
     display: flex;
     justify-content: center;
     align-items: center;
@@ -98,25 +114,35 @@
     overflow: hidden;
     height: 300px;
     width: 300px;
-  
+
     background-image: url("/images/logo.png");
     background-repeat: no-repeat;
     background-position: center;
     background-size: 75px;
-  }
-  
-  .video-player{
+}
+
+.video-player{
     height: 100%;
     width: 100%;
-  }
-  
-  .video-player video{
+}
+
+.video-player video{
     border-radius: 50%;
-  }
-  
-  @media (max-width: 1400px) {
+}
+
+@media (max-width: 1400px) {
     .video__container{
-      height: 200px;
-      width: 200px;
+        height: 200px;
+        width: 200px;
     }
-  }
+}
+
+#onlySM {
+    display: none;
+}
+
+@media (max-width: 1200px) {
+    #onlySM {
+        display: block;
+    }
+}

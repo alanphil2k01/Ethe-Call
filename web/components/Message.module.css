@@ -1,45 +1,47 @@
 .message__wrapper:last-child {
     margin-bottom: 6.5rem;
   }
-  
+
   .message__wrapper {
     display: flex;
     gap: 10px;
     margin: 1em;
   }
-  
+
   .message__body {
     background-color: #363739;
     border-radius: 10px;
     padding: 10px 15px;
     width: fit-content;
     max-width: 900px;
+    word-break: break-word;
   }
-  
+
   .message__body strong {
     font-weight: 600;
     color: #ede0e0;
   }
-  
+
   .message__body__bot{
     padding: 0 20px;
     max-width: 900px;
     color: #bdbdbd;
   }
-  
-  
+
+
   .message__author {
     margin-right: 10px;
     color: #2aca3e!important;
-  
+
   }
-  
+
   .message__author__bot {
     margin-right: 10px;
     color: #a52aca!important;
-  
+
   }
-  
+
   .message__text {
     margin: 0;
+    cursor: pointer;
   }

@@ -1,9 +1,10 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
 import { Web3Storage } from "web3.storage";
 
 interface FileUpload {
     uploadFiles:(files: File[]) => Promise<string>;
-    retrieveFiles:(cid: string) => void;
+    retrieveFiles:(cid: string) => Promise<void>;
     downloadLink: MutableRefObject<HTMLAnchorElement>;
 }
 
@@ -18,15 +19,20 @@ export default function useFileUpload(): FileUpload {
 
     async function uploadFiles(files: File[]): Promise<string> {
         const cid = await storage.put(files);
-        console.log(cid);
         return cid;
     }
 
-    async function retrieveFiles(cid: string): Promise<File> {
-        const res = await storage.get(cid);
-        const files = await res.files();
+    async function retrieveFiles(cid: string): Promise<void> {
+        let files: File[];
+        await toast.promise(async () => {
+            const res = await storage.get(cid);
+            files = await res.files();
+        }, {
+            pending: "Downloading Files",
+            success: "Downloaded Files",
+            error: "Failed to Download Files",
+        });
         for (const file of (files as File[])) {
-            console.log(file.name);
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = () => {
@@ -34,10 +40,10 @@ export default function useFileUpload(): FileUpload {
                     downloadLink.current.href = reader.result as string;
                     downloadLink.current.download = file.name;
                     downloadLink.current.click();
+                    console.log(file.name);
                 }
             };
         }
-        return files[0];
     }
 
     return { uploadFiles, retrieveFiles, downloadLink };

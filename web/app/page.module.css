@@ -259,3 +259,12 @@
 .avatar__option__selected {
   border: 3px solid #845695;
 }
+
+.settings_btn svg {
+    height: 4rem;
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    right: 50%;
+    fill: #ffffff;
+}

@@ -7,6 +7,7 @@ import { useContext } from 'react';
 import { ZeroAddress, isAddress } from 'ethers';
 import { useRouter } from 'next/navigation';
 import { Fingerprint } from '../fingerprint';
+import { toast } from 'react-toastify';
 
 export default function users() {
     const router = useRouter();
@@ -14,7 +15,7 @@ export default function users() {
     const [roomID, setRoomId] = useState<string>("");
     const users = useRef<string[]>(new Array(100).fill(""));
     const isAdmin = useRef<Boolean[]>(new Array(100).fill(false));
-    const { loadedWeb3, newCallWithUsers, nicknameToAddress, getHost } = useContext(Blockchain);
+    const { loadedWeb3, newCallWithUsers, nicknameToAddress, signer } = useContext(Blockchain);
 
     const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
         setSelectedNumber(Number(event.target.value));
@@ -47,13 +48,15 @@ export default function users() {
     }
 
     const {certificates} = useContext(Fingerprint);
+
     async function createRoom() {
         if (!loadedWeb3) {
-            alert("Please connect your Meteamask Wallet");
+            toast.warn("Please connect your Meteamask Wallet");
             return;
         }
-        if (roomID === "") {
-            alert("Please enter a call ID");
+        const regex = /^[a-zA-Z0-9_-]+$/;
+        if (roomID === "" || !regex.test(roomID)) {
+            toast.warn("Please enter a valid room ID");
             //router.push(`/room2/123`);
             return;
         }
@@ -67,28 +70,36 @@ export default function users() {
             } else {
                 addr = await nicknameToAddress(users.current[i]);
             }
-            if (addr !== ZeroAddress) {
+            if (addr !== ZeroAddress && addr !== signer.address) {
                 console.log(`Address of ${users.current[i]} is ${addr}`);
                 if (isAdmin.current[i]) {
                     adminList.push(addr);
                 } else {
                     userList.push(addr);
                 }
+            } else if (addr === signer.address ) {
+                toast.warn(`You entered your own nickname or address`);
+                return;
             } else {
-                alert(`${users.current[i]} does not exist`);
+                toast.warn(`${users.current[i]} does not exist`);
                 return;
             }
         }
 
-        console.log(userList);
-        console.log(adminList);
-        if ((await newCallWithUsers(roomID, userList, adminList))) {
+        const callCreated = await toast.promise(
+            () => newCallWithUsers(roomID, userList, adminList), {
+                pending: "Creating Call",
+            }
+        );
+        if (callCreated) {
                 if(certificates.length === 0){
-                    alert("Room created successfully. Redirecting to home");
-                    router.push('/');
+                    toast.success("Room created successfully. Redirecting to Home", {
+                      autoClose: 4000
+                    });
+                    setTimeout(() => router.push('/'), 3000);
                 }else{
                     router.push(`/room2/${roomID}`);
-                }    
+                }
         }
 
     }

@@ -1,11 +1,13 @@
-'use client';
+"use client";
 
 import Head from 'next/head'
 import { useRouter } from 'next/navigation'
-import { useState, useContext, useRef, FormEvent } from 'react'
+import { useState, useContext, useRef } from 'react'
 import { Blockchain } from './blockchain';
 import styles from './page.module.css';
 import { Fingerprint } from "./fingerprint";
+import { toast } from 'react-toastify';
+
 
 export default function Home() {
     const router = useRouter()
@@ -13,24 +15,25 @@ export default function Home() {
     const { signer, isAdmitted, roomExists, loadedWeb3 } = useContext(Blockchain);
     const { setFingerprint, setNickname } = useContext(Blockchain);
     const {displayName} = useContext(Blockchain);
-    const { generatedCertificate, setGeneratedCertificate, generateNewCertificate } = useContext(Fingerprint);
+    const { generatedCertificate, setGeneratedCertificate, generateNewCertificate} = useContext(Fingerprint);
     const nicknameRef = useRef<HTMLInputElement>();
+    const [showSettings, setShowSettings] = useState(false);
 
     async function joinRoom() {
     if (!loadedWeb3) {
-        alert("Please connect your Metamask Wallet");
+        toast.warn("Please connect your Metamask Wallet");
         return;
     }
     if (roomName === "") {
-        alert("Room ID is required");
+        toast.warn("Room ID is required");
         return;
     }
     if (!(await roomExists(roomName))) {
-        alert("Room ID does not exist");
+        toast.warn("Room ID does not exist");
         return;
     }
     if (!(await isAdmitted(roomName, signer.address))) {
-        alert("You are not admitted to this room");
+        toast.warn("You are not admitted to this room");
         return;
     }
     router.push(`/room2/${roomName || Math.random().toString(36).slice(2)}`)
@@ -38,7 +41,7 @@ export default function Home() {
 
     const createRoom = () => {
       if (!loadedWeb3) {
-          alert("Please connect your Metamask Wallet");
+          toast.warn("Please connect your Metamask Wallet");
           return;
       }
       router.push(`/createRoom/`)
@@ -47,13 +50,24 @@ export default function Home() {
     async function generate() {
         const cert = await generateNewCertificate();
         const fingerprint = (cert.getFingerprints())[0].value;
-        await setFingerprint(fingerprint);
+        await toast.promise(
+            () => setFingerprint(fingerprint),
+            {
+                  pending: 'Generating Certificates',
+                }
+        )
         setGeneratedCertificate(true);
+        setShowSettings(false);
     }
 
     async function set() {
         const nickname = nicknameRef.current.value;
-        await setNickname(nickname);
+        await toast.promise(
+            () => setNickname(nickname),
+            {
+                  pending: 'Setting nickname',
+                }
+        )
         nicknameRef.current.value = "";
     }
 
@@ -65,19 +79,20 @@ export default function Home() {
         <meta className={styles.description} content="Use Native WebRTC API for video conferencing" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+      <main className={styles.main}>
 
-      { !loadedWeb3 && (<main className={styles.main}><p>Please connect to MetaMask</p></main>) }
+      { !loadedWeb3 && (<div>Please connect to MetaMask</div>) }
 
-      { loadedWeb3 && !generatedCertificate && ( <main className={styles.main}>
-            <main id={`${styles.room__lobby__container}`}>
+      { (loadedWeb3 && (showSettings || !generatedCertificate)) && (
+            <div id={`${styles.room__lobby__container}`}>
               <div id={`${styles.form__container}`}>
                 <div id={`${styles.form__container__header}`}>
-                    <p className={`${styles.text}`}>Setting up your profile 👨‍🏭🔧</p>
+                    <p className={`${styles.text}`}>Setup your profile 👨‍🏭🔧</p>
                 </div>
 
                 <form id={`${styles.lobby__form}`} onSubmit={(event) => {event.preventDefault()}}>
                   <div className={`${styles.form__field__wrapper}`}>
-                    <button onClick={generate}>Generate Certificate
+                    <button onClick={generate}>{!generatedCertificate ? "Generate Certificate" : "Generate New Certificate"}
                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.025 1l-2.847 2.828 6.176 6.176h-16.354v3.992h16.354l-6.176 6.176 2.847 2.828 10.975-11z"/></svg>
                     </button>
                   </div>
@@ -104,7 +119,8 @@ export default function Home() {
 
                 </form>
               </div>
-            </main>
+            </div>
+            )}
                  {/* { certificates.length !== 0 && (
                     <>
                         <div className={`${styles.heading}`}>
@@ -120,9 +136,8 @@ export default function Home() {
                         </div>
                     </>
                 ) } */}
-          </main> ) }
-         { loadedWeb3 && generatedCertificate && (
-          <main id={`${styles.room__lobby__container}`}>
+         { loadedWeb3 && generatedCertificate && !showSettings && (
+          <div id={`${styles.room__lobby__container}`}>
             <div id={`${styles.form__container}`}>
               <div id={`${styles.form__container__header}`}>
                   <p className={`${styles.text}`}>👋 Create or Join Room</p>
@@ -147,9 +162,18 @@ export default function Home() {
                 </div>
               </form>
             </div>
-          </main>
-          )
-         }
+          </div>
+          )}
+          { loadedWeb3 && generatedCertificate && (
+            <button className={`${styles.settings_btn}`} onClick={() => setShowSettings(prev => !prev)}>
+                { showSettings ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM281 385c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l71-71L136 280c-13.3 0-24-10.7-24-24s10.7-24 24-24l182.1 0-71-71c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0L393 239c9.4 9.4 9.4 24.6 0 33.9L281 385z"/></svg>
+                ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M512 256A256 256 0 1 0 0 256a256 256 0 1 0 512 0zM231 127c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-71 71L376 232c13.3 0 24 10.7 24 24s-10.7 24-24 24l-182.1 0 71 71c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0L119 273c-9.4-9.4-9.4-24.6 0-33.9L231 127z"/></svg>
+                ) }
+            </button>
+          )}
+      </main>
     </div>
   )
 }

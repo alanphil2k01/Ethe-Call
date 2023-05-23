@@ -23,6 +23,7 @@ import Link from "next/link";
 import useFileUpload from "@/hooks/FileUpload";
 import { MessageType, MessageContent } from "@/types/message";
 import { useMediaDevices, DeviceInfo } from "@/hooks/MediaDevices";
+import { toast } from "react-toastify";
 
 function DeviceList({ deviceList, onChange}: { deviceList: DeviceInfo[], onChange?: ChangeEventHandler<HTMLSelectElement> }) {
     return (
@@ -44,6 +45,9 @@ const Room = ({ params }) => {
     const [micEnabled, setMicEnabled] = useState(false);
     const [screenSharing, setScreenSharing] = useState(false);
     const [focussedOn, setFocussedOn] = useState(-1);
+    const isWindowDefined = typeof window !== 'undefined';
+    const [showMembers, setShowMembers] = useState(isWindowDefined ? window.innerWidth >= 1200 : false);
+    const [showChat, setShowChat] = useState(isWindowDefined ? window.innerWidth >= 1200 : false);
 
     const { uploadFiles } = useFileUpload();
 
@@ -110,30 +114,32 @@ const Room = ({ params }) => {
 
     function verifyUser() {
         if (!loadedWeb3) {
-            alert("Please connect your Metamask Wallet");
+            toast.warn("Please connect your Metamask Wallet", { autoClose: 2500 });
             router.push("/");
             return;
         }
         roomExists(roomID).then((val) => {
             if (!val) {
-                alert("Room ID does not exist");
+                toast.warn("Room ID does not exist", { autoClose: 2500 });
                 router.push("/");
+                return;
             }
         });
         isAdmitted(roomID, signer.address).then((val) => {
             if (!val) {
-                alert("You are not admitted to this room");
+                toast.warn("You are not admitted to this room", { autoClose: 2500 });
                 router.push("/");
+                return;
             }
         });
         if (!certificates) {
-            alert("Please generate a certificate");
+            toast.warn("Please generate a certificate", { autoClose: 2500 });
             router.push("/profile");
             return;
         }
     }
 
-    async function initUserData() {
+    function initUserData() {
         // const rando =(Math.random() + 1).toString(36).substring(7);
         userData.current = {
             address: signer.address,
@@ -149,29 +155,33 @@ const Room = ({ params }) => {
         if (!loadedStream) {
             return;
         }
-        initUserData().then(() => {
-            userStream.current.getTracks().forEach((track) => {
-                if (track.kind === "video") {
-                    setCamEnabled(track.enabled);
-                    return;
-                }
-                if (track.kind === "audio") {
-                    setMicEnabled(track.enabled);
-                    return;
-                }
+        initUserData();
+        if (!socketRef.current) {
+            fetch("/api/socket2")
+            .then(() => {
+                getSocket("");
             });
-            if (!socketRef.current) {
-                fetch("/api/socket2")
-                .then(() => {
-                        getSocket("");
-                        });
-            }
-        });
+        }
 
     }, [loadedStream]);
 
     useEffect(() => {
         if (tracksChanged) {
+            console.log("TRACKS");
+            console.log(userStream.current.getTracks());
+            console.log(userStream.current);
+            userStream.current.getTracks().forEach((track) => {
+                if (track.kind === "video") {
+                    console.log("VIDEO " + track.enabled);
+                    setCamEnabled(track.enabled);
+                    return;
+                }
+                if (track.kind === "audio") {
+                    console.log("AUDIO " + track.enabled);
+                    setMicEnabled(track.enabled);
+                    return;
+                }
+            });
             console.log("Updating Tracks");
             peersRef.current.forEach((peer) => peer.updateStream(userStream.current));
             setTracksChanged(false);
@@ -272,6 +282,9 @@ const Room = ({ params }) => {
 
     function sendChatMsg() {
         const msg = chatInputRef.current.value;
+        if (msg === "") {
+            return;
+        }
         sendDcMsgToAllPeers({ type: MessageType.CHAT, data: msg, author: displayName });
         chatInputRef.current.value = "";
     }
@@ -294,8 +307,8 @@ const Room = ({ params }) => {
                     }} >Check Status</button>
                 */}
 
-                <section className={`${styles.members__container}`}>
-                    <Members peers={peers}></Members>
+                <section className={`${styles.members__container}`} style={showMembers ? {display: "block"} : {display: "none"}}>
+                    <Members closeHandler={() => setShowMembers(false)} peers={peers}></Members>
                 </section>
 
                 <section className={`${styles.stream__container}`}>
@@ -320,6 +333,8 @@ const Room = ({ params }) => {
                         setFocussedOn={setFocussedOn}
                         userStream={userStream}
                         peers={peers}
+                        showMembersHandler={() => setShowMembers(prev => !prev)}
+                        showChatHandler={() => setShowChat(prev => !prev)}
                         camEnabled={camEnabled}
                         micEnabled={micEnabled}
                         screenSharing={screenSharing}
@@ -349,14 +364,17 @@ const Room = ({ params }) => {
                     <DeviceList deviceList={audioOutList.current} />
                     */}
                 </section>
-                <section className={`${styles.messages__container}`}>
-                    <Chat msgs={chatMsgs} chatInputRef={chatInputRef} sendChatMsg={sendChatMsg} onDrop={(event: DragEvent<HTMLDivElement>) => {
-                        event.preventDefault();
-                        const files = Array.from(event.dataTransfer.files);
+                <section className={`${styles.messages__container}`} style={showChat ? {display: "block"} : {display: "none"}} >
+                    <Chat closeHandler={() => setShowChat(false)} msgs={chatMsgs} chatInputRef={chatInputRef} sendChatMsg={sendChatMsg} sendFiles={(files: File[]) => {
                         if (files.length > 0) {
-                            uploadFiles(files).then((cid) => {
+                            toast.promise(async () => {
+                                const cid = await uploadFiles(files)
                                 sendDcMsgToAllPeers({ type: MessageType.FILE, data: cid, author: displayName });
-                            });
+                            }, {
+                                pending: "Uploading Files",
+                                success: "Uploaded Files",
+                                error: "Failed to Upload Files",
+                            })
                         }
                     }} />
                 </section>
