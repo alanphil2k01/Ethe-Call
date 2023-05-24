@@ -10,9 +10,9 @@ async function main() {
 
   console.log(`EtheCall was deployed to ${etheCall.address}`);
   fs.createReadStream(path.join(__dirname, '../artifacts/contracts/Ethe-Call.sol/EtheCall.json'))
-    .pipe(fs.createWriteStream(path.join(__dirname, '../../common/EtheCall.json')));
+    .pipe(fs.createWriteStream(path.join(__dirname, '../../web/common/EtheCall.json')));
 
-  fs.writeFile(path.join(__dirname, "../../common/contract_addr.js"), `export default '${etheCall.address}'`, function(err) {
+  fs.writeFile(path.join(__dirname, "../../web/common/contract_addr.js"), `export default '${etheCall.address}'`, function(err) {
     if(err) {
         return console.log(err);
     }

@@ -1,7 +1,7 @@
 "use client";
 
-import contractABI from "@common/EtheCall.json";
-import contract_addr from "@common/contract_addr";
+import contractABI from "@/common/EtheCall.json";
+import contract_addr from "@/common/contract_addr";
 import { BrowserProvider, Contract, JsonRpcSigner, SignatureLike, ZeroAddress, verifyMessage } from "ethers";
 import { ReactNode, createContext, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
