@@ -1,4 +1,4 @@
-import { UserData } from "@/types/socket";
+import { UserData } from "common-types/socket";
 
 export type Options = {
     initiator?: boolean;

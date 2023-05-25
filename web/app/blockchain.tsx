@@ -2,10 +2,10 @@
 
 import contractABI from "@/common/EtheCall.json";
 import contract_addr from "@/common/contract_addr";
-import { BrowserProvider, Contract, JsonRpcSigner, SignatureLike, ZeroAddress, verifyMessage } from "ethers";
+import { BrowserProvider, Contract, JsonRpcSigner, SignatureLike, ZeroAddress, isAddress, verifyMessage } from "ethers";
 import { ReactNode, createContext, useState } from "react";
 import { MetaMaskInpageProvider } from "@metamask/providers";
-import { UserData } from "@/types/socket";
+import { UserData } from "common-types/socket";
 import { toast } from "react-toastify";
 
 declare global {
@@ -210,6 +210,10 @@ export function BlockchainProvider({ children }: { children: ReactNode }) {
     }
 
     async function verifyPeer(sd: RTCSessionDescription, peerData: UserData): Promise<Boolean> {
+        if (peerData.message === "" || peerData.sign === "" || !isAddress(peerData.address)) {
+            console.log("Invalide peer data received");
+            return false;
+        }
         if (!verifySign(peerData.message, peerData.sign)) {
             console.log("Messaage Sign verification failed");
             return false;

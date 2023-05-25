@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import logo from "@/images/logo.png";
 
-export default function MyNewNavbar({ children }: { children: ReactNode }){
+export default function MyNewNavbar({ }: { children: ReactNode }){
     return (
         <main className={`${styles.main}`}>
             <header id={`${styles.nav}`}>

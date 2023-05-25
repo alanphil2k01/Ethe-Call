@@ -13,7 +13,8 @@ export default function useFileUpload(): FileUpload {
     const downloadLink = useRef<HTMLAnchorElement>(null);
 
     useEffect(() => {
-        const storage = new Web3Storage({ token: process.env.NEXT_PUBLIC_WEB3STORAGE_TOKEN });
+        const token = process.env.NEXT_PUBLIC_WEB3STORAGE_TOKEN;
+        const storage = new Web3Storage({ token });
         setStorage(storage);
     }, []);
 

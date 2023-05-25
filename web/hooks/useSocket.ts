@@ -1,7 +1,7 @@
 // hooks/useSocket.js
 import { useEffect, useRef } from "react";
 import io, { Socket } from "socket.io-client";
-import { ClientToServerEvents, ServerToClientEvents } from '@/types/socket';
+import { ClientToServerEvents, ServerToClientEvents } from 'common-types/socket';
 
 const useSocket = () => {
   const socketCreated = useRef(false)

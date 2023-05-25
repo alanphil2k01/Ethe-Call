@@ -1,25 +1,16 @@
 "use client";
 
-import { ChangeEventHandler, useContext, useEffect, useRef, useState, DragEvent } from "react";
+import { ChangeEventHandler, useContext, useEffect, useRef, useState } from "react";
 import io, { Socket } from "socket.io-client";
-import { ClientToServerEvents, ServerToClientEvents, UserData } from '@/types/socket';
-import MyVideoComponent from "@/components/MyVideoComponent";
+import { ClientToServerEvents, ServerToClientEvents, UserData } from 'common-types/socket';
 import Chat from "@/components/Chat";
 import Stream from "@/components/Stream";
 import Members from "@/components/Members";
-// import ChatComponent from "@/components/ChatComponent";
-import { Blockchain, verifySign } from "@/app/blockchain";
+import { Blockchain } from "@/app/blockchain";
 import { Fingerprint }  from "@/app/fingerprint";
 import { useRouter } from "next/navigation";
 import { Peer } from "@/app/peer";
 import styles from './page.module.css';
-//import  IconComponent  from './IconComponent';
-import Image from 'next/image';
-import camera from "../../../../src/camera.png";
-import mic from "../../../../src/mic.png";
-import phone from "../../../../src/phone.png";
-import invite from "../../../../src/invite.png";
-import Link from "next/link";
 import useFileUpload from "@/hooks/FileUpload";
 import { MessageType, MessageContent } from "@/types/message";
 import { useMediaDevices, DeviceInfo } from "@/hooks/MediaDevices";
@@ -45,6 +36,7 @@ const Room = ({ params }) => {
     const [micEnabled, setMicEnabled] = useState(false);
     const [screenSharing, setScreenSharing] = useState(false);
     const [focussedOn, setFocussedOn] = useState(-1);
+    const focussedOnRef = useRef(-1);
     const isWindowDefined = typeof window !== 'undefined';
     const [showMembers, setShowMembers] = useState(isWindowDefined ? window.innerWidth >= 1200 : false);
     const [showChat, setShowChat] = useState(isWindowDefined ? window.innerWidth >= 1200 : false);
@@ -90,11 +82,11 @@ const Room = ({ params }) => {
         });
         socketRef.current.on("receiving returned answer", (answer, returnAddr) => {
             const peer = peersRef.current.find((peer) => peer.peerData.address === returnAddr);
-            verifyPeer(answer, peer.peerData).then((validUser) => {
-                if (!validUser) {
-                    peer.pc.close();
-                }
-            });
+            // verifyPeer(answer, peer.peerData).then((validUser) => {
+            //     if (!validUser) {
+            //         peer.pc.close();
+            //     }
+            // });
             console.log("Receiving returned answer");
             peer.setRemoteSDP(answer);
         });
@@ -106,7 +98,13 @@ const Room = ({ params }) => {
                 .catch((e) => console.log(e));
         });
         socketRef.current.on("user disconnected", (addr) => {
-            setFocussedOn(-1);
+            if (focussedOnRef.current !== -1) {
+                if (peersRef.current[focussedOnRef.current].peerData.address === addr) {
+                    setFocussedOn(-1);
+                } else if (focussedOnRef.current === peers.length - 1) {
+                    setFocussedOn(focussedOnRef.current - 1);
+                }
+            }
             peersRef.current = peersRef.current.filter((peer) => addr !== peer.peerData.address);
             setPeers([...peersRef.current]);
         });
@@ -140,10 +138,12 @@ const Room = ({ params }) => {
     }
 
     function initUserData() {
-        // const rando =(Math.random() + 1).toString(36).substring(7);
+        // if (!loadedWeb3) {
+        //     return;
+        // }
         userData.current = {
-            address: signer.address,
-            // address: rando,
+            // address: signer.address,
+            address:(Math.random() + 1).toString(36).substring(7),
             displayName,
             message: message,
             sign: sign,
@@ -151,33 +151,26 @@ const Room = ({ params }) => {
     }
 
     useEffect(() => {
-        verifyUser();
+        // verifyUser();
         if (!loadedStream) {
             return;
         }
         initUserData();
         if (!socketRef.current) {
-            fetch("/api/socket2")
-            .then(() => {
-                getSocket("");
-            });
+            getSocket(process.env.NEXT_PUBLIC_WS_URL || "");
         }
 
     }, [loadedStream]);
 
+    useEffect (() => { focussedOnRef.current = focussedOn }, [focussedOn]);
     useEffect(() => {
         if (tracksChanged) {
-            console.log("TRACKS");
-            console.log(userStream.current.getTracks());
-            console.log(userStream.current);
             userStream.current.getTracks().forEach((track) => {
                 if (track.kind === "video") {
-                    console.log("VIDEO " + track.enabled);
                     setCamEnabled(track.enabled);
                     return;
                 }
                 if (track.kind === "audio") {
-                    console.log("AUDIO " + track.enabled);
                     setMicEnabled(track.enabled);
                     return;
                 }
@@ -236,11 +229,11 @@ const Room = ({ params }) => {
             socketRef.current.emit("send offer", offer, peerData.address)
         });
         peer.pc.ontrack = (event) => {
-            console.log("Got Tracks: ", event.streams[0].getTracks());
             const index = peersRef.current.findIndex(p => p === peer)
             if (index === -1) {
                 return;
             }
+            console.log("Got Tracks for peer: ", peersRef.current[index].peerData.displayName);
             peersRef.current[index].remoteStream = event.streams[0];
             setPeers([...peersRef.current]);
         };
@@ -257,18 +250,18 @@ const Room = ({ params }) => {
             peerData,
         })
 
-        verifyPeer(offer, peerData).then((validUser) => {
-            if (!validUser) {
-                peer.pc.close();
-            }
-        });
+        // verifyPeer(offer, peerData).then((validUser) => {
+        //     if (!validUser) {
+        //         peer.pc.close();
+        //     }
+        // });
 
         peer.pc.ontrack = (event) => {
-            console.log("Got Tracks: ", event.streams[0].getTracks());
             const index = peersRef.current.findIndex(p => p === peer)
             if (index === -1) {
                 return;
             }
+            console.log("Got Tracks for peer: ", peersRef.current[index].peerData.displayName);
             peersRef.current[index].remoteStream = event.streams[0];
             setPeers([...peersRef.current]);
         };
@@ -289,45 +282,15 @@ const Room = ({ params }) => {
         chatInputRef.current.value = "";
     }
 
-    /*for(let i = 0; videoFrames.length > i; i++){
-        videoFrames[i].addEventListener('click', expandVideoFrame)
-    }*/
-
     return (
         <main className={`${styles.container}`}>
             <div className={`${styles.room__container}`}>
-                    {/*
-                    <button onClick={() => {
-                        peersRef.current.forEach(peer => {
-                            console.log("Connecttion State: ", peer.peer.pc.connectionState);
-                            console.log("Ice Connection State: ", peer.peer.pc.iceConnectionState);
-                            console.log("Signalling State: ", peer.peer.pc.signalingState);
-                            console.log("Can Trickle: ", peer.peer.pc.canTrickleIceCandidates);
-                        })
-                    }} >Check Status</button>
-                */}
 
                 <section className={`${styles.members__container}`} style={showMembers ? {display: "block"} : {display: "none"}}>
                     <Members closeHandler={() => setShowMembers(false)} peers={peers}></Members>
                 </section>
 
                 <section className={`${styles.stream__container}`}>
-                    {/*<div className={`${styles.stream__box}`}>
-                        <MyVideoComponent stream={userVideoRef} peers={peers} />
-                    </div>
-                     <div className={`${styles.controls}`}>
-                        <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleCamera()})}>
-                            <Image src={camera} alt="camera" className={`${styles.imgCamera} ${styles.images}`}/>
-                        </div>
-                        <div className={`${styles.controlContainer} ${styles.micBtn}`} onClick={()=>peers.forEach((peer)=>{peer.toggleMic()})}>
-                            <Image src={mic} alt="mic" className={`${styles.imgMic} ${styles.images}`}/>
-                        </div>
-                        <div className={`${styles.controlContainer} ${styles.leaveBtn}`}>
-                            <Link href="/">
-                                <Image src={phone} alt="phone" className={`${styles.imgPhone} ${styles.images}`}/>
-                            </Link>
-                        </div>
-                    </div> */}
                     <Stream
                         focussedOn={focussedOn}
                         setFocussedOn={setFocussedOn}
@@ -360,8 +323,8 @@ const Room = ({ params }) => {
                         }}></Stream>
                         {/*
                         <DeviceList deviceList={cameraList.current} onChange={(e) => {setCamera(e.target.value)}} />
-                    <DeviceList deviceList={audioInList.current} onChange={(e) => {setAudioIn(e.target.value)}} />
-                    <DeviceList deviceList={audioOutList.current} />
+                        <DeviceList deviceList={audioInList.current} onChange={(e) => {setAudioIn(e.target.value)}} />
+                        <DeviceList deviceList={audioOutList.current} />
                     */}
                 </section>
                 <section className={`${styles.messages__container}`} style={showChat ? {display: "block"} : {display: "none"}} >
@@ -378,42 +341,7 @@ const Room = ({ params }) => {
                         }
                     }} />
                 </section>
-        {/* <div>
-            <div className="h-5"></div>
-            {/*
-            <button onClick={() => {
-                peersRef.current.forEach(peer => {
-                    console.log("Connecttion State: ", peer.peer.pc.connectionState);
-                    console.log("Ice Connection State: ", peer.peer.pc.iceConnectionState);
-                    console.log("Signalling State: ", peer.peer.pc.signalingState);
-                    console.log("Can Trickle: ", peer.peer.pc.canTrickleIceCandidates);
-                })
-            }} >Check Status</button>
-        */}
-        {/*
-            <MyVideoComponent stream={userVideoRef} peers={peers} />
-            <div className={`${styles.controls}`}>
-                <div className={`${styles.controlContainer} ${styles.cameraBtn}`} onClick={() => {
-                    // peers.forEach((peer)=>{peer.toggleCamera()})
-                    userStreamRef.current.getTracks().find(track => track.kind === "video").enabled = !camEnabled;
-                    setCamEnabled(!camEnabled);
-                }}>
-                    <Image src={camera} alt="camera" className={`${styles.imgCamera} ${styles.images}`}/>
-                </div>
-                <div className={`${styles.controlContainer} ${styles.micBtn}`} onClick={() => {
-                    // peers.forEach((peer)=>{peer.toggleMic()})
-                    userStreamRef.current.getTracks().find(track => track.kind === "audio").enabled = !micEnabled;
-                    setMicEnabled(!micEnabled);
-                }}>
-                    <Image src={mic} alt="mic" className={`${styles.imgMic} ${styles.images}`}/>
-                </div>
-                <div className={`${styles.controlContainer} ${styles.leaveBtn}`}>
-                    <Link onClick={() => socketRef.current.disconnect()} href="/">
-                        <Image src={phone} alt="phone" className={`${styles.imgPhone} ${styles.images}`}/>
-                    </Link>
-                </div>
-            </div> */}
-        </div>
+            </div>
         </main>
     );
 };

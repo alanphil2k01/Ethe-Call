@@ -1,0 +1,24 @@
+{
+  "name": "ethe-call",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "workspaces": [
+      "web",
+      "server",
+      "blockchain",
+      "common-types"
+  ],
+  "scripts": {
+    "gcp-build": "cd web && next build",
+    "build:web": "cd web && next build",
+    "build:server": "cd server && npm run build",
+    "build": "npm run build:web && npm run build:server",
+    "dev:web": "cd web && npm run dev",
+    "start:server": "cd server && npm start",
+    "start": "cd web && npm start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

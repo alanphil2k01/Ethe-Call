@@ -36,7 +36,7 @@ export default function Home() {
         toast.warn("You are not admitted to this room");
         return;
     }
-    router.push(`/room2/${roomName || Math.random().toString(36).slice(2)}`)
+    router.push(`/room/${roomName}`)
     }
 
     const createRoom = () => {

@@ -2,7 +2,7 @@ import type { Server as HTTPServer } from 'http'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import type { Socket as NetSocket } from 'net'
 import { Server as IOServer } from 'socket.io'
-import { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData, UserData } from '@/types/socket';
+import { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData, UserData } from 'common-types/socket';
 
 interface SocketServer extends HTTPServer {
   io?: IOServer | undefined

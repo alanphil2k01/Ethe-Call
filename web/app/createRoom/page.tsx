@@ -57,7 +57,6 @@ export default function users() {
         const regex = /^[a-zA-Z0-9_-]+$/;
         if (roomID === "" || !regex.test(roomID)) {
             toast.warn("Please enter a valid room ID");
-            //router.push(`/room2/123`);
             return;
         }
 
@@ -98,7 +97,7 @@ export default function users() {
                     });
                     setTimeout(() => router.push('/'), 3000);
                 }else{
-                    router.push(`/room2/${roomID}`);
+                    router.push(`/room/${roomID}`);
                 }
         }
 
