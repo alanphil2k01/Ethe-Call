@@ -1,8 +1,18 @@
-import { createServer } from "http";
-import { Server } from 'socket.io'
+import { createServer as createServerHTTP } from "http";
+import { createServer as createServerHTTPS } from "https";
+import { Server, Socket } from 'socket.io'
 import { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData, UserData } from "common-types/socket";
+import * as path from "path";
+import * as fs from "fs";
 
-const port: number = parseInt(process.env.PORT) || 8000;
+const httpPort: number = parseInt(process.env.HTTP_PORT) || 8000;
+const httpsPort: number = parseInt(process.env.HTTPS_PORT) || 8001;
+const useHttps = process.env.HTTPS === 'yes';
+const certDir = process.env.CERT_DIR || './certs';
+
+const sslKeyPath = path.join(certDir, 'privkey.pem');
+const sslCertPath = path.join(certDir, 'cert.pem');
+const sslCaPath = path.join(certDir, 'chain.pem');
 
 function roomAddrPair(roomID: string, addr: string): string {
     return `${roomID}:${addr}`;
@@ -11,16 +21,10 @@ const users: { [roomID: string]: { socketID: string, userData: UserData }[] }= {
 const socketToRoom: { [socketID: string]: string } = {};
 const roomAdddrPairToSocket: { [key: string]: string } = {};
 
-const httpServer = createServer();
-
-const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-    }
-});
-
-io.on('connection', (socket) => {
+function socketHandler(
+    socket: Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>,
+    io: Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>
+) {
     console.log("User connected: " + socket.id);
     socket.on("join room", (roomID, payload) => {
         socket.data.userData = payload;
@@ -87,10 +91,42 @@ io.on('connection', (socket) => {
             }
         });
     });
+}
 
+const httpServer = createServerHTTP();
+const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpServer, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"],
+    }
 });
 
+io.on('connection', (socket) => socketHandler(socket, io));
 
-httpServer.listen(port, () => {
-    console.log("Starting server on port: " + port);
+
+httpServer.listen(httpPort, () => {
+    console.log("Starting HTTP server on port: " + httpPort);
 })
+
+if (useHttps) {
+    const sslOptions = {
+        key: fs.readFileSync(path.resolve(sslKeyPath)),
+        cert: fs.readFileSync(path.resolve(sslCertPath)),
+        ca: fs.readFileSync(path.resolve(sslCaPath))
+    };
+    const httpsServer = createServerHTTPS(sslOptions);
+    const secureIo = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(httpsServer, {
+        cors: {
+            origin: "*",
+            methods: ["GET", "POST"],
+        }
+    });
+
+    secureIo.on('connection', (socket) => socketHandler(socket, secureIo));
+
+    httpsServer.listen(httpsPort, () => {
+        console.log("Starting HTTPs server on port: " + httpsPort);
+    });
+
+} else {
+}

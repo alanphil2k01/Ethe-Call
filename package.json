@@ -10,13 +10,17 @@
       "common-types"
   ],
   "scripts": {
-    "gcp-build": "cd web && next build",
-    "build:web": "cd web && next build",
-    "build:server": "cd server && npm run build",
-    "build": "npm run build:web && npm run build:server",
-    "dev:web": "cd web && npm run dev",
-    "start:server": "cd server && npm start",
-    "start": "cd web && npm start"
+    "gcp-build": "cd web && yarn build",
+    "build:web": "cd web && yarn build",
+    "build:server": "cd server && yarn build",
+    "build": "yarn build:web && yarn build:server",
+    "hh:node": "cd blockchain && yarn hardhat node",
+    "hh:deploy": "cd blockchain && yarn hardhat run ./scripts/deploy-local.ts --network localhost",
+    "dev:web": "cd web && yarn dev",
+    "deploy:gcp": "yarn build:web && gcloud app deploy",
+    "deploy:contract": "cd blockchain && hardhat run ./scripts/deploy.ts --network sepolia",
+    "start:server": "cd server && yarn start",
+    "start": "cd web && yarn start"
   },
   "keywords": [],
   "author": "",

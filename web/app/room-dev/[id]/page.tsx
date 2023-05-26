@@ -93,7 +93,7 @@ const Room = ({ params }) => {
         socketRef.current.on("ice candidate", (candidate, fromAddr) => {
             const peer = peersRef.current.find((peer) => peer.peerData.address === fromAddr);
             console.log("Received ice candidates");
-            peer.pc
+            peer?.pc
                 .addIceCandidate(new RTCIceCandidate(candidate))
                 .catch((e) => console.log(e));
         });

@@ -3,13 +3,13 @@ FROM node:18-alpine
 WORKDIR /app
 
 COPY package.json .
-COPY package-lock.json .
+COPY yarn.lock .
 COPY ./server/package.json ./server/package.json
+COPY ./common-types ./common-types
 
-RUN npm install
+RUN yarn install
 
 COPY ./server ./server
-COPY ./common-types ./common-types
 
 RUN yarn build:server
 

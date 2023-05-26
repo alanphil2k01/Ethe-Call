@@ -10,9 +10,7 @@ export type Options = {
 }
 
 const ICE_SERVERS = [
-    {
-        urls: 'stun:openrelay.metered.ca:80',
-    }
+    { urls: 'stun:openrelay.metered.ca:80' },
 ]
 
 export class Peer {
